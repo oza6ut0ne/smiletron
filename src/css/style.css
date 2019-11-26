@@ -18,4 +18,5 @@ div {
     color: #ffffff;
     -webkit-text-stroke-color: #000000;
     -webkit-text-stroke-width: 1.3px;
+    font-family: "YuGothic", "Hiragino Kaku Gothic ProN", "Meiryo", "verdana", sans-serif;
 }
