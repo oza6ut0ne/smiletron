@@ -25,6 +25,7 @@
             "env": {
                 "NODE_ENV": "development",
             },
+            "preLaunchTask": "bundle",
             "console": "integratedTerminal",
         }
     ]

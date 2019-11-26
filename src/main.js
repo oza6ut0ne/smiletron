@@ -1,7 +1,8 @@
 "use strict";
 const path = require('path');
 const { app, BrowserWindow } = require('electron');
-const  electronScreen = require('electron').screen;
+const electronScreen = require('electron').screen;
+
 app.on('ready', () => setTimeout(onAppReady, 400));
 function onAppReady() {
     var size = electronScreen.getPrimaryDisplay().size;
@@ -33,4 +34,16 @@ function onAppReady() {
             BrowserWindow.addDevToolsExtension(require('devtron').path);
         }
     }
+
+    startServer(mainWindow.webContents);
+}
+
+function startServer(webContents) {
+    const net = require('net');
+    net.createServer(function (conn) {
+        conn.on('data', function (data) {
+            webContents.send('comment', data)
+            conn.end();
+        });
+    }).listen(2525);
 }
