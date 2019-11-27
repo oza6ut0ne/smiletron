@@ -1,8 +1,9 @@
 import window from './window';
 const sep = '###SEP###';
 
-function createComment(text: string) {
+function addComment(text: string) {
     const comment = document.createElement('div')
+    comment.className = 'comment';
     comment.style.left = window.innerWidth + 'px';
     comment.style.top = Math.floor(Math.random() * window.innerHeight * 0.9) + 'px';
 
@@ -10,16 +11,23 @@ function createComment(text: string) {
         comment.classList.add('linux');
     }
 
+    const iconImg: HTMLImageElement = document.createElement('img');
     if (text.indexOf(sep) !== -1) {
-        var [icon, text] = noTruncSplit(text, sep, 1);
-        const img = document.createElement('img');
-        img.src = icon;
-        comment.appendChild(img);
+        [iconImg.src, text] = noTruncSplit(text, sep, 1);
+        iconImg.className = 'icon';
     }
 
     const span = document.createElement('span');
-    span.innerText = text;
+    span.className = 'content';
+    span.textContent = text;
     comment.appendChild(span);
+
+    document.body.appendChild(comment);
+    if (iconImg.src) {
+        iconImg.height = span.offsetHeight;
+        comment.appendChild(iconImg);
+    }
+
     return comment;
 }
 
@@ -41,9 +49,8 @@ function startAnimation(div: HTMLDivElement) {
 }
 
 function handleComment(text: string) {
-    const comment = createComment(text);
-    document.body.appendChild(comment);
-    startAnimation(comment);
+    const comment = addComment(text);
+    setTimeout(startAnimation, 100, comment);
 }
 
 window.ipcRenderer.on('comment', (event: any, args: any) => {

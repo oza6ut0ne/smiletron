@@ -10,17 +10,30 @@ body {
     background-color: rgba(0, 0, 0, 0.0);
 }
 
-div {
-    font-size: 36pt;
-    font-weight: bold;
-    white-space: pre;
+.comment {
     position: fixed;
-    color: #ffffff;
-    -webkit-text-stroke-color: #000000;
-    -webkit-text-stroke-width: 2px;
+    display: grid;
+    font-size: 36pt;
+    white-space: pre;
     font-family: "YuGothic", "Hiragino Kaku Gothic ProN", "Meiryo", "verdana", sans-serif;
 }
 
-div.linux {
+.icon {
+    grid-row: 1;
+    grid-column: 1;
+    vertical-align: text-top;
+    margin-right: 10px;
+}
+
+.content {
+    grid-row: 1;
+    grid-column: 2;
+    color: #ffffff;
+    font-weight: bold;
+    -webkit-text-stroke-color: #000000;
+    -webkit-text-stroke-width: 2px;
+}
+
+.linux .content {
     -webkit-text-stroke-width: 1.5px;
 }
