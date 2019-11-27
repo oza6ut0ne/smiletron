@@ -42,7 +42,7 @@ function startServer(webContents) {
     const net = require('net');
     net.createServer(function (conn) {
         conn.on('data', function (data) {
-            webContents.send('comment', data)
+            webContents.send('comment', data.toString())
             conn.end();
         });
     }).listen(2525);
