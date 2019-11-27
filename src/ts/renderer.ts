@@ -2,6 +2,10 @@ import window from './window';
 
 function createComment(text: string) {
     const comment = document.createElement('div')
+    if (navigator.userAgent.indexOf('Linux') !== -1) {
+        comment.classList.add('linux');
+    }
+
     comment.style.left = window.innerWidth + 'px';
     comment.style.top = Math.floor(Math.random() * window.innerHeight * 0.9) + 'px';
     comment.innerText = text;
