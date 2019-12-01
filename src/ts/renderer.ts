@@ -14,6 +14,7 @@ function addComment(text: string) {
     const iconImg: HTMLImageElement = document.createElement('img');
     if (text.indexOf(sep) !== -1) {
         [iconImg.src, text] = noTruncSplit(text, sep, 1);
+        iconImg.onerror = () => iconImg.remove();
         iconImg.className = 'icon';
     }
 
@@ -25,7 +26,7 @@ function addComment(text: string) {
     document.body.appendChild(comment);
     if (iconImg.src) {
         iconImg.height = span.offsetHeight;
-        comment.appendChild(iconImg);
+        comment.prepend(iconImg);
     }
 
     return comment;
