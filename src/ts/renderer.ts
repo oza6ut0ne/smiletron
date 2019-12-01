@@ -1,5 +1,5 @@
 import window from './window';
-const sep = '###SEP###';
+const sep = '##SEP##';
 
 function addComment(text: string) {
     const comment = document.createElement('div')
