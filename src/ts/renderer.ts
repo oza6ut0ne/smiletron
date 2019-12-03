@@ -1,5 +1,6 @@
 import window from './window';
-const sep = '##SEP##';
+const SEPARATOR = '##SEP##';
+const DURATION_PER_DISPLAY = 6000;
 
 function addComment(text: string) {
     const comment = document.createElement('div')
@@ -12,8 +13,8 @@ function addComment(text: string) {
     }
 
     const iconImg: HTMLImageElement = document.createElement('img');
-    if (text.indexOf(sep) !== -1) {
-        [iconImg.src, text] = noTruncSplit(text, sep, 1);
+    if (text.indexOf(SEPARATOR) !== -1) {
+        [iconImg.src, text] = noTruncSplit(text, SEPARATOR, 1);
         iconImg.onerror = () => iconImg.remove();
         iconImg.className = 'icon';
     }
@@ -32,14 +33,14 @@ function addComment(text: string) {
     return comment;
 }
 
-function startAnimation(div: HTMLDivElement) {
+function startAnimation(div: HTMLDivElement, numDisplays: number) {
     const effect = [
         { left: window.innerWidth + 'px' },
         { left: -div.offsetWidth + 'px' }
     ];
 
     const timing = {
-        duration: 6000,
+        duration: DURATION_PER_DISPLAY * numDisplays,
         iterations: 1,
         easing: 'linear'
     };
@@ -49,13 +50,13 @@ function startAnimation(div: HTMLDivElement) {
     }
 }
 
-function handleComment(text: string) {
+function handleComment(text: string, numDisplays: number) {
     const comment = addComment(text);
-    setTimeout(startAnimation, 100, comment);
+    setTimeout(startAnimation, 100, comment, numDisplays);
 }
 
-window.ipcRenderer.on('comment', (event: any, args: any) => {
-    handleComment(args);
+window.ipcRenderer.on('comment', (event: any, text: string, numDisplays: number) => {
+    handleComment(text, numDisplays);
 })
 
 function noTruncSplit(s: string, sep: string, limit: number) {

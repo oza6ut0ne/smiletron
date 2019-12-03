@@ -5,7 +5,8 @@ const electronScreen = require('electron').screen;
 
 app.on('ready', () => setTimeout(onAppReady, 400));
 function onAppReady() {
-    var size = electronScreen.getPrimaryDisplay().size;
+    const size = electronScreen.getPrimaryDisplay().size;
+    const [width, height, numDisplays] = decideWindowSize();
     var mainWindow = new BrowserWindow({
         left: 0,
         top: 0,
@@ -20,8 +21,8 @@ function onAppReady() {
             preload: path.join(__dirname, 'js/preload.js')
         }
     });
+    mainWindow.setSize(width, height);
     mainWindow.setIgnoreMouseEvents(true);
-    mainWindow.maximize();
     mainWindow.loadURL('file://' + __dirname + '/html/index.html');
 
     mainWindow.on('closed', function () {
@@ -35,14 +36,43 @@ function onAppReady() {
         }
     }
 
-    startServer(mainWindow.webContents);
+    startServer(mainWindow.webContents, numDisplays);
 }
 
-function startServer(webContents) {
+function decideWindowSize() {
+    const isMultiDisplayForced = process.argv.some(a => {
+        return a === '--multi-display' || a === '-m'
+    })
+
+    const displays = electronScreen.getAllDisplays();
+    if (!isDisplaySizesEqual(displays) && !isMultiDisplayForced) {
+        const size = electronScreen.getPrimaryDisplay().size;
+        return [size.width, size.height, 1];
+    }
+
+    const numDisplays = displays.length;
+    var width = 0;
+    var height = 0;
+    displays.forEach(display => {
+        width += display.size.width;
+        height = height < display.size.height ? display.size.height : height;
+    })
+    return [width, height, numDisplays];
+}
+
+function isDisplaySizesEqual(displays) {
+    if (displays.length === 1) return true;
+    const size = displays[0].size;
+    return displays.slice(1).every(d => {
+        return d.size.width === size.width && d.size.height === size.height
+    });
+}
+
+function startServer(webContents, numDisplays) {
     const net = require('net');
-    net.createServer(function (conn) {
-        conn.on('data', function (data) {
-            webContents.send('comment', data.toString())
+    net.createServer(conn => {
+        conn.on('data', data => {
+            webContents.send('comment', data.toString(), numDisplays)
             conn.end();
         });
     }).listen(2525);
