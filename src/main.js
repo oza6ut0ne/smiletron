@@ -3,7 +3,7 @@ const path = require('path');
 const { app, BrowserWindow } = require('electron');
 const electronScreen = require('electron').screen;
 
-app.on('ready', () => setTimeout(onAppReady, 400));
+app.on('ready', () => setTimeout(onAppReady, 2000));
 function onAppReady() {
     const size = electronScreen.getPrimaryDisplay().size;
     const [width, height, numDisplays] = decideWindowSize();
