@@ -22,6 +22,7 @@ function onAppReady() {
         }
     });
     mainWindow.setSize(width, height);
+    mainWindow.setAlwaysOnTop(true, 'floating');
     mainWindow.setIgnoreMouseEvents(true);
     mainWindow.loadURL('file://' + __dirname + '/html/index.html');
 
@@ -53,9 +54,9 @@ function decideWindowSize() {
     const numDisplays = displays.length;
     var width = 0;
     var height = 0;
-    displays.forEach(display => {
-        width += display.size.width;
-        height = height < display.size.height ? display.size.height : height;
+    displays.forEach(d => {
+        width += d.size.width;
+        height = height < d.size.height ? d.size.height : height;
     })
     return [width, height, numDisplays];
 }
