@@ -18,6 +18,7 @@ function onAppReady() {
         resizable: false,
         alwaysOnTop: true,
         webPreferences: {
+            devTools: false,
             preload: path.join(__dirname, 'js/preload.js')
         }
     });
@@ -31,7 +32,6 @@ function onAppReady() {
     });
 
     if (process.env.NODE_ENV === 'development') {
-        mainWindow.webContents.openDevTools();
         if (!BrowserWindow.getDevToolsExtensions().hasOwnProperty('devtron')) {
             BrowserWindow.addDevToolsExtension(require('devtron').path);
         }
