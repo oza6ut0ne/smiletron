@@ -8,10 +8,6 @@ function addComment(text: string) {
     comment.style.left = window.innerWidth + 'px';
     comment.style.top = Math.floor(Math.random() * window.innerHeight * 0.9) + 'px';
 
-    if (navigator.userAgent.indexOf('Linux') !== -1) {
-        comment.classList.add('linux');
-    }
-
     const iconImg: HTMLImageElement = document.createElement('img');
     if (text.indexOf(SEPARATOR) !== -1) {
         [iconImg.src, text] = noTruncSplit(text, SEPARATOR, 1);
