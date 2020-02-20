@@ -23,7 +23,7 @@ function onAppReady() {
         }
     });
     mainWindow.setSize(width, height);
-    mainWindow.setAlwaysOnTop(true, 'floating');
+    mainWindow.setAlwaysOnTop(true, 'screen-saver');
     mainWindow.setIgnoreMouseEvents(true);
     mainWindow.loadURL('file://' + __dirname + '/html/index.html');
 
