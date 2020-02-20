@@ -1,6 +1,29 @@
 import window from './window';
 const SEPARATOR = '##SEP##';
 const DURATION_PER_DISPLAY = 6000;
+const FLASHING_DECAY_TIME = 1000;
+
+document.addEventListener('DOMContentLoaded', () => {
+    for (const eventType of ['focus', 'resize']) {
+        window.addEventListener(eventType, () => flashWindow());
+    }
+    flashWindow();
+});
+
+function flashWindow() {
+    const effect = [
+        { background: 'rgb(0, 255, 0, 0.3)' },
+        { background: 'rgb(0, 0, 0, 0)' }
+    ];
+
+    const timing = {
+        duration: FLASHING_DECAY_TIME,
+        iterations: 1,
+        easing: 'linear'
+    };
+
+    document.body.animate(effect, timing);
+}
 
 function addComment(text: string) {
     const comment = document.createElement('div')
