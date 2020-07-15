@@ -55,7 +55,7 @@ function addComment(text: string) {
 function startAnimation(div: HTMLDivElement, numDisplays: number) {
     const effect = [
         { left: window.innerWidth + 'px' },
-        { left: -div.offsetWidth + 'px' }
+        { left: -div.offsetWidth * numDisplays + 'px' }
     ];
 
     const timing = {
