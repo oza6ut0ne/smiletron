@@ -5,15 +5,17 @@
   "main": "./src/main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "run-s bundle electron:build",
+    "build": "run-s bundle clean:dist electron:build",
     "start": "run-s bundle electron",
     "start:debug": "run-s bundle:debug electron:debug",
     "electron": "cross-env NODE_ENV=production electron .",
     "electron:debug": "cross-env NODE_ENV=development electron .",
-    "electron:build": "electron-builder build -m zip -l AppImage -w portable --x64",
-    "bundle": "run-s tsc webpack",
-    "bundle:debug": "run-s tsc webpack:debug",
-    "tsc": "tsc",
+    "electron:build": "electron-builder build --x64 -l AppImage -w portable -m zip",
+    "bundle": "run-s clean:bundle webpack",
+    "bundle:debug": "run-s clean:bundle webpack:debug",
+    "clean": "run-p clean:bundle clean:dist",
+    "clean:bundle": "rimraf src/main.js src/js",
+    "clean:dist": "rimraf dist",
     "webpack": "webpack --mode production",
     "webpack:debug": "webpack --mode development"
   },
@@ -22,11 +24,13 @@
   "devDependencies": {
     "cross-env": "^6.0.3",
     "devtron": "^1.4.0",
-    "electron": "^7.1.2",
+    "electron": "^7.3.3",
     "electron-builder": "^21.2.0",
     "npm-run-all": "^4.1.5",
-    "typescript": "^3.7.2",
-    "webpack": "^4.41.2",
-    "webpack-cli": "^3.3.10"
+    "rimraf": "^3.0.2",
+    "ts-loader": "^8.0.11",
+    "typescript": "^4.1.2",
+    "webpack": "^5.10.0",
+    "webpack-cli": "^4.2.0"
   }
 }

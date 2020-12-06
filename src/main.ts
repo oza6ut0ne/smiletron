@@ -1,15 +1,16 @@
 "use strict";
-const path = require('path');
-const { app, BrowserWindow } = require('electron');
-const electronScreen = require('electron').screen;
+import * as net from 'net';
+import * as path from 'path'
+import { app, BrowserWindow, Display, WebContents } from 'electron';
+import { screen as electronScreen } from 'electron';
 
 app.on('ready', () => setTimeout(onAppReady, 2000));
 function onAppReady() {
     const size = electronScreen.getPrimaryDisplay().size;
     const [width, height, numDisplays] = decideWindowSize();
-    var mainWindow = new BrowserWindow({
-        left: 0,
-        top: 0,
+    let mainWindow: BrowserWindow | null = new BrowserWindow({
+        x: 0,
+        y: 0,
         width: size.width,
         height: size.height,
         frame: false,
@@ -25,7 +26,7 @@ function onAppReady() {
     mainWindow.setSize(width, height);
     mainWindow.setAlwaysOnTop(true, 'screen-saver');
     mainWindow.setIgnoreMouseEvents(true);
-    mainWindow.loadURL('file://' + __dirname + '/html/index.html');
+    mainWindow.loadURL(`file://${__dirname}/html/index.html`);
 
     mainWindow.on('closed', function () {
         mainWindow = null;
@@ -61,7 +62,7 @@ function decideWindowSize() {
     return [width, height, numDisplays];
 }
 
-function isDisplaySizesEqual(displays) {
+function isDisplaySizesEqual(displays: Display[]) {
     if (displays.length === 1) return true;
     const size = displays[0].size;
     return displays.slice(1).every(d => {
@@ -69,11 +70,10 @@ function isDisplaySizesEqual(displays) {
     });
 }
 
-function startServer(webContents, numDisplays) {
-    const net = require('net');
+function startServer(webContents: WebContents, numDisplays: number) {
     net.createServer(conn => {
         conn.on('data', data => {
-            webContents.send('comment', data.toString(), numDisplays)
+            webContents.send('comment', data.toString(), numDisplays);
             conn.end();
         });
     }).listen(2525);
