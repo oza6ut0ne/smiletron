@@ -19,7 +19,7 @@ function onAppReady() {
         resizable: false,
         alwaysOnTop: true,
         webPreferences: {
-            devTools: false,
+            devTools: process.env.NODE_ENV === 'development',
             preload: path.join(__dirname, 'js/preload.js')
         }
     });
