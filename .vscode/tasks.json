@@ -4,7 +4,7 @@
         {
             "label": "bundle",
             "type": "npm",
-            "script": "bundle:debug",
+            "script": "bundle:dev",
             "problemMatcher": []
         }
     ]
