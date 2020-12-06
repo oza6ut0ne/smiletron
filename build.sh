@@ -8,4 +8,4 @@ docker run --rm \
  -v ${PWD##*/}-node-modules:/project/node_modules \
  -v ~/.cache/electron:/root/.cache/electron \
  -v ~/.cache/electron-builder:/root/.cache/electron-builder \
- electronuserland/builder:wine bash -c 'yarn && npm run build'
+ electronuserland/builder:wine bash -c "yarn && npm run build && chown -R $(id -u):$(id -g) /project/{build,dist}"

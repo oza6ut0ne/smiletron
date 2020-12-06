@@ -4,10 +4,10 @@ const path = require('path');
 let main = {
     mode: 'development',
     target: 'electron-main',
-    entry: path.join(__dirname, 'src', 'main'),
+    entry: path.join(__dirname, 'src', 'main', 'main'),
     output: {
         filename: 'main.js',
-        path: path.join(__dirname, 'src')
+        path: path.join(__dirname, 'dist')
     },
     node: {
         __dirname: false,
@@ -17,7 +17,7 @@ let main = {
         rules: [{
             test: /.ts?$/,
             include: [
-                path.resolve(__dirname, 'src'),
+                path.resolve(__dirname, 'src', 'main'),
             ],
             exclude: [
                 path.resolve(__dirname, 'node_modules'),
@@ -42,16 +42,16 @@ let main = {
 let renderer = {
     mode: 'development',
     target: 'electron-renderer',
-    entry: path.join(__dirname, 'src', 'ts/renderer'),
+    entry: path.join(__dirname, 'src', 'renderer', 'ts', 'renderer'),
     output: {
         filename: 'bundle.js',
-        path: path.join(__dirname, 'src', 'js')
+        path: path.join(__dirname, 'dist', 'js')
     },
     module: {
         rules: [{
             test: /.ts?$/,
             include: [
-                path.resolve(__dirname, 'src', 'ts'),
+                path.resolve(__dirname, 'src', 'renderer', 'ts'),
             ],
             exclude: [
                 path.resolve(__dirname, 'node_modules'),
@@ -68,16 +68,16 @@ let renderer = {
 let rendererPreload = {
     mode: 'development',
     target: 'electron-renderer',
-    entry: path.join(__dirname, 'src', 'ts/preload'),
+    entry: path.join(__dirname, 'src', 'renderer', 'ts', 'preload'),
     output: {
         filename: 'preload.js',
-        path: path.join(__dirname, 'src', 'js')
+        path: path.join(__dirname, 'dist', 'js')
     },
     module: {
         rules: [{
             test: /.ts?$/,
             include: [
-                path.resolve(__dirname, 'src', 'ts'),
+                path.resolve(__dirname, 'src', 'renderer', 'ts'),
             ],
             exclude: [
                 path.resolve(__dirname, 'node_modules'),

@@ -2,26 +2,36 @@
   "name": "smiletron",
   "version": "0.0.1",
   "description": "",
-  "main": "./src/main.js",
+  "main": "./dist/main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "run-s bundle clean:dist electron:build",
+    "build": "run-s bundle clean:build electron:build",
     "start": "run-s bundle electron",
     "start:debug": "run-s bundle:debug electron:debug",
     "electron": "cross-env NODE_ENV=production electron .",
     "electron:debug": "cross-env NODE_ENV=development electron .",
     "electron:build": "electron-builder build --x64 -l AppImage -w portable -m zip",
-    "bundle": "run-s clean:bundle webpack",
-    "bundle:debug": "run-s clean:bundle webpack:debug",
-    "clean": "run-p clean:bundle clean:dist",
-    "clean:bundle": "rimraf src/main.js src/js",
-    "clean:dist": "rimraf dist",
+    "bundle": "run-s clean:dist webpack copy",
+    "bundle:debug": "run-s clean:dist webpack:debug copy",
     "webpack": "webpack --mode production",
-    "webpack:debug": "webpack --mode development"
+    "webpack:debug": "webpack --mode development",
+    "copy": "cpx -C \"./src/renderer/**/{*.html,*.css,*.ttf}\" ./dist",
+    "clean": "run-p clean:dist clean:build",
+    "clean:dist": "rimraf ./dist",
+    "clean:build": "rimraf ./build"
+    },
+  "build": {
+    "directories": {
+      "output": "./build"
+    },
+    "files": [
+      "./dist"
+    ]
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "cpx": "^1.5.0",
     "cross-env": "^6.0.3",
     "devtron": "^1.4.0",
     "electron": "^7.3.3",
