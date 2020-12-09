@@ -8,12 +8,14 @@
             "type": "node",
             "request": "launch",
             "name": "Electron: Main",
-            "protocol": "inspector",
             "skipFiles": [
                 "<node_internals>/**"
             ],
             "sourceMaps": true,
-            "program": "${workspaceFolder}/dist/main.js",
+            "outFiles": [
+                "${workspaceRoot}/dist/main.js"
+            ],
+            "program": "${workspaceRoot}/src/main/main.ts",
             "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron",
             "windows": {
                 "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron.cmd"
@@ -22,14 +24,11 @@
                 "--enable-logging",
                 "--remote-debugging-port=9222"
             ],
-            "args": [
-                ".",
-            ],
             "env": {
-                "NODE_ENV": "development",
+                "NODE_ENV": "development"
             },
             "preLaunchTask": "bundle",
-            "console": "integratedTerminal",
+            "console": "integratedTerminal"
         },
         {
             "name": "Electron: Renderer",
@@ -37,6 +36,9 @@
             "request": "attach",
             "port": 9222,
             "webRoot": "${workspaceRoot}",
+            "sourceMapPathOverrides": {
+                "webpack://${workspaceFolderBasename}/./src/renderer/*": "${webRoot}/src/renderer/*"
+            },
             "timeout": 30000
         }
     ],
