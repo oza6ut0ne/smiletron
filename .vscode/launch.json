@@ -11,10 +11,6 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "sourceMaps": true,
-            "outFiles": [
-                "${workspaceRoot}/dist/main.js"
-            ],
             "program": "${workspaceRoot}/src/main/main.ts",
             "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron",
             "windows": {

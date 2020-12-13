@@ -1,5 +1,5 @@
-import * as net from 'net';
-import * as path from 'path';
+import net from 'net';
+import path from 'path';
 import { app, BrowserWindow, Display, ipcMain, Menu, Rectangle, Tray } from 'electron';
 import { screen as electronScreen } from 'electron';
 
@@ -8,6 +8,7 @@ const assetsPath = app.isPackaged ? path.join(process.resourcesPath, 'assets') :
 const iconPath = path.join(assetsPath, 'icon.png');
 let tray: Tray | null = null;
 let commentCount = 0;
+
 
 app.on('ready', () => setTimeout(onAppReady, 2000));
 app.on('window-all-closed', () => app.quit());
