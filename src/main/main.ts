@@ -1,12 +1,12 @@
 import net from 'net';
 import path from 'path';
-import { app, BrowserWindow, Display, ipcMain, Menu, Rectangle, Tray } from 'electron';
+import { app, BrowserWindow, Display, ipcMain, Rectangle } from 'electron';
 import { screen as electronScreen } from 'electron';
+import { setupTray, tray } from './tray';
 
 const mainUrl = `file://${__dirname}/html/index.html`;
 const assetsPath = app.isPackaged ? path.join(process.resourcesPath, 'assets') : 'src/assets';
 const iconPath = path.join(assetsPath, 'icon.png');
-let tray: Tray | null = null;
 let commentCount = 0;
 
 
@@ -28,35 +28,12 @@ function onAppReady() {
     const windows = rects.map(r => createWindow(r));
 
     if (process.platform !== 'darwin') {
-        setupTray();
+        setupTray(iconPath);
     }
     setupIpcHandlers(windows);
     startServer(windows, isSingleWindow, displays.length);
 }
 
-function setupTray() {
-    tray = new Tray(iconPath);
-    const contextMenu = Menu.buildFromTemplate([
-        { label: 'Restore', click: () => {
-            BrowserWindow.getAllWindows().forEach(w => w.show());
-        }},
-        { label: 'Minimize', click: () => {
-            BrowserWindow.getAllWindows().forEach(w => w.minimize());
-        }},
-        { role: 'quit'}
-    ]);
-
-    tray.setToolTip(app.name);
-    tray.setContextMenu(contextMenu);
-    tray.addListener('click', () => {
-        const windows = BrowserWindow.getAllWindows();
-        if (windows.every(w => w.isMinimized())) {
-            windows.forEach(w => w.show());
-        } else {
-            windows.forEach(w => w.minimize());
-        }
-    });
-}
 
 function createWindow(rect: Rectangle): BrowserWindow {
     let window: BrowserWindow | null = new BrowserWindow({
@@ -71,7 +48,7 @@ function createWindow(rect: Rectangle): BrowserWindow {
         transparent: true,
         resizable: false,
         skipTaskbar: true,
-        type: 'toolbar',
+        type: 'dock',
         alwaysOnTop: true,
         webPreferences: {
             devTools: process.env.NODE_ENV === 'development',
