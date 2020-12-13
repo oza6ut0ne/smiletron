@@ -1,9 +1,12 @@
 import * as net from 'net';
 import * as path from 'path';
-import { app, BrowserWindow, Display, ipcMain, Rectangle } from 'electron';
+import { app, BrowserWindow, Display, ipcMain, Menu, Rectangle, Tray } from 'electron';
 import { screen as electronScreen } from 'electron';
 
 const mainUrl = `file://${__dirname}/html/index.html`;
+const assetsPath = app.isPackaged ? path.join(process.resourcesPath, 'assets') : 'src/assets';
+const iconPath = path.join(assetsPath, 'icon.png');
+let tray: Tray | null = null;
 let commentCount = 0;
 
 app.on('ready', () => setTimeout(onAppReady, 2000));
@@ -23,8 +26,35 @@ function onAppReady() {
     const rects = calcWindowRects(displays, isSingleWindow);
     const windows = rects.map(r => createWindow(r));
 
+    if (process.platform !== 'darwin') {
+        setupTray();
+    }
     setupIpcHandlers(windows);
     startServer(windows, isSingleWindow, displays.length);
+}
+
+function setupTray() {
+    tray = new Tray(iconPath);
+    const contextMenu = Menu.buildFromTemplate([
+        { label: 'Restore', click: () => {
+            BrowserWindow.getAllWindows().forEach(w => w.show());
+        }},
+        { label: 'Minimize', click: () => {
+            BrowserWindow.getAllWindows().forEach(w => w.minimize());
+        }},
+        { role: 'quit'}
+    ]);
+
+    tray.setToolTip(app.name);
+    tray.setContextMenu(contextMenu);
+    tray.addListener('click', () => {
+        const windows = BrowserWindow.getAllWindows();
+        if (windows.every(w => w.isMinimized())) {
+            windows.forEach(w => w.show());
+        } else {
+            windows.forEach(w => w.minimize());
+        }
+    });
 }
 
 function createWindow(rect: Rectangle): BrowserWindow {
@@ -33,10 +63,14 @@ function createWindow(rect: Rectangle): BrowserWindow {
         y: rect.y,
         width: rect.width,
         height: rect.height,
+        enableLargerThanScreen: true,
         frame: false,
+        icon: iconPath,
         show: true,
         transparent: true,
         resizable: false,
+        skipTaskbar: true,
+        type: 'toolbar',
         alwaysOnTop: true,
         webPreferences: {
             devTools: process.env.NODE_ENV === 'development',
@@ -50,6 +84,14 @@ function createWindow(rect: Rectangle): BrowserWindow {
 
     window.on('closed', () => {
         window = null;
+    });
+    window.on('minimize', () => {
+        if (BrowserWindow.getAllWindows().every(w => w.isMinimized())) {
+            tray?.setToolTip(app.name + ' (minimized)');
+        }
+    });
+    window.on('restore', () => {
+        tray?.setToolTip(app.name);
     });
     window.webContents.on('devtools-closed', () => window?.reload());
 
