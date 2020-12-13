@@ -1,94 +1,69 @@
 const path = require('path');
 
+const isDev = process.env.NODE_ENV === 'development';
 
-let main = {
-    mode: 'development',
-    target: 'electron-main',
-    entry: path.join(__dirname, 'src', 'main', 'main'),
-    output: {
-        filename: 'main.js',
-        path: path.join(__dirname, 'dist')
-    },
-    node: {
-        __dirname: false,
-        __filename: false
-    },
-    module: {
-        rules: [{
-            test: /.ts?$/,
-            include: [
-                path.resolve(__dirname, 'src', 'main'),
-            ],
-            exclude: [
-                path.resolve(__dirname, 'node_modules'),
-            ],
-            loader: 'ts-loader',
-        }]
-    },
-    externals: [
-        function(context, request, callback) {
-          if (request.match(/devtron/)) {
-            return callback(null, 'commonjs ' + request)
-          }
-          callback();
-        }
+/** @type import('webpack').Configuration */
+const baseConfig = {
+  mode: isDev ? 'development' : 'production',
+  resolve: {
+    extensions: ['.js', '.ts', '.jsx', '.tsx', '.json'],
+  },
+  module: {
+    rules: [
+      {
+        test: /\.tsx?$/,
+        exclude: /node_modules/,
+        loader: 'ts-loader',
+      },
     ],
-    resolve: {
-        extensions: ['.js', '.ts']
-    },
-    devtool: 'inline-source-map'
+  },
+  devtool: isDev ? 'inline-cheap-module-source-map' : false,
 };
 
-let renderer = {
-    mode: 'development',
-    target: 'electron-renderer',
-    entry: path.join(__dirname, 'src', 'renderer', 'ts', 'renderer'),
-    output: {
-        filename: 'bundle.js',
-        path: path.join(__dirname, 'dist', 'js')
-    },
-    module: {
-        rules: [{
-            test: /.ts?$/,
-            include: [
-                path.resolve(__dirname, 'src', 'renderer', 'ts'),
-            ],
-            exclude: [
-                path.resolve(__dirname, 'node_modules'),
-            ],
-            loader: 'ts-loader',
-        }]
-    },
-    resolve: {
-        extensions: ['.js', '.ts']
-    },
-    devtool: 'inline-source-map'
+/** @type import('webpack').Configuration */
+const main = {
+  ...baseConfig,
+  target: 'electron-main',
+  entry: {
+    main: path.join(__dirname, 'src/main/main'),
+  },
+  output: {
+    filename: 'main.js',
+    path: path.join(__dirname, 'dist')
+  },
+  node: {
+    __dirname: false,
+    __filename: false
+  },
+  externals: [
+    function (context, request, callback) {
+      if (request.match(/devtron/)) {
+        return callback(null, 'commonjs ' + request)
+      }
+      callback();
+    }
+  ],
 };
 
-let rendererPreload = {
-    mode: 'development',
-    target: 'electron-renderer',
-    entry: path.join(__dirname, 'src', 'renderer', 'ts', 'preload'),
-    output: {
-        filename: 'preload.js',
-        path: path.join(__dirname, 'dist', 'js')
-    },
-    module: {
-        rules: [{
-            test: /.ts?$/,
-            include: [
-                path.resolve(__dirname, 'src', 'renderer', 'ts'),
-            ],
-            exclude: [
-                path.resolve(__dirname, 'node_modules'),
-            ],
-            loader: 'ts-loader',
-        }]
-    },
-    resolve: {
-        extensions: ['.js', '.ts']
-    },
-    devtool: 'inline-source-map'
+/** @type import('webpack').Configuration */
+const renderer = {
+  ...baseConfig,
+  target: 'web',
+  entry: path.join(__dirname, 'src/renderer/ts/renderer'),
+  output: {
+    filename: 'bundle.js',
+    path: path.join(__dirname, 'dist/js')
+  }
 };
 
-module.exports = [main, renderer, rendererPreload];
+const preload = {
+  ...baseConfig,
+  target: 'electron-preload',
+  entry: path.join(__dirname, 'src/renderer/ts/preload'),
+  output: {
+    filename: 'preload.js',
+    path: path.join(__dirname, 'dist/js')
+  }
+};
+
+module.exports = [main, renderer, preload];
