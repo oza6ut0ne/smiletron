@@ -19,7 +19,7 @@
     "clean": "run-p clean:dist clean:build",
     "clean:dist": "rimraf ./dist",
     "clean:build": "rimraf ./build"
-    },
+  },
   "build": {
     "directories": {
       "output": "./build"

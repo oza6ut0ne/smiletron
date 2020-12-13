@@ -1,18 +1,44 @@
 "use strict";
 import * as net from 'net';
-import * as path from 'path'
-import { app, BrowserWindow, Display, WebContents } from 'electron';
+import * as path from 'path';
+import { app, BrowserWindow, Display, ipcMain, Rectangle } from 'electron';
 import { screen as electronScreen } from 'electron';
 
+const mainUrl = `file://${__dirname}/html/index.html`;
+
 app.on('ready', () => setTimeout(onAppReady, 2000));
+app.on('window-all-closed', () => app.quit());
+
 function onAppReady() {
-    const size = electronScreen.getPrimaryDisplay().size;
-    const [width, height, numDisplays] = decideWindowSize();
-    let mainWindow: BrowserWindow | null = new BrowserWindow({
-        x: 0,
-        y: 0,
-        width: size.width,
-        height: size.height,
+    const isSingleWindowForced = process.argv.some(a => {
+        return a === '--single-window' || a === '-s';
+    });
+
+    const isMultiWindowForced = process.argv.some(a => {
+        return a === '--multi-window' || a === '-m';
+    });
+
+    const displays = electronScreen.getAllDisplays();
+    const isSingleWindow = isSingleWindowForced || (!isMultiWindowForced && isDisplaySizesEqual(displays));
+    const rects = calcWindowRects(displays, isSingleWindow);
+    const windows = rects.map(r => createWindow(r));
+
+    if (process.env.NODE_ENV === 'development') {
+        if (!BrowserWindow.getDevToolsExtensions().hasOwnProperty('devtron')) {
+            BrowserWindow.addDevToolsExtension(require('devtron').path);
+        }
+    }
+
+    setupIpcHandlers(windows);
+    startServer(windows, isSingleWindow, displays.length);
+}
+
+function createWindow(rect: Rectangle): BrowserWindow {
+    let window: BrowserWindow | null = new BrowserWindow({
+        x: rect.x,
+        y: rect.y,
+        width: rect.width,
+        height: rect.height,
         frame: false,
         show: true,
         transparent: true,
@@ -23,58 +49,70 @@ function onAppReady() {
             preload: path.join(__dirname, 'js/preload.js')
         }
     });
-    mainWindow.setSize(width, height);
-    mainWindow.setAlwaysOnTop(true, 'screen-saver');
-    mainWindow.setIgnoreMouseEvents(true);
-    mainWindow.loadURL(`file://${__dirname}/html/index.html`);
+    window.setSize(rect.width, rect.height);
+    window.setAlwaysOnTop(true, 'screen-saver');
+    window.setIgnoreMouseEvents(true);
+    window.loadURL(mainUrl);
 
-    mainWindow.on('closed', function () {
-        mainWindow = null;
+    window.on('closed', () => {
+        window = null;
     });
+    window.webContents.on('devtools-closed', () => window?.reload());
 
-    if (process.env.NODE_ENV === 'development') {
-        if (!BrowserWindow.getDevToolsExtensions().hasOwnProperty('devtron')) {
-            BrowserWindow.addDevToolsExtension(require('devtron').path);
-        }
-    }
-
-    startServer(mainWindow.webContents, numDisplays);
+    return window;
 }
 
-function decideWindowSize() {
-    const isMultiDisplayForced = process.argv.some(a => {
-        return a === '--multi-display' || a === '-m'
-    })
-
-    const displays = electronScreen.getAllDisplays();
-    if (!isDisplaySizesEqual(displays) && !isMultiDisplayForced) {
-        const size = electronScreen.getPrimaryDisplay().size;
-        return [size.width, size.height, 1];
+function calcWindowRects(displays: Display[], isSingleWindow: boolean): Rect[] {
+    if (!isSingleWindow) {
+        return displays.sort((a, b) => b.bounds.x - a.bounds.x).map(d => d.bounds);
     }
 
-    const numDisplays = displays.length;
     var width = 0;
-    var height = 0;
+    var minHeight = Infinity;
     displays.forEach(d => {
         width += d.size.width;
-        height = height < d.size.height ? d.size.height : height;
-    })
-    return [width, height, numDisplays];
+        minHeight = minHeight < d.size.height ? minHeight : d.size.height;
+    });
+    return [{x: 0, y:0, width: width, height: minHeight}];
 }
 
 function isDisplaySizesEqual(displays: Display[]) {
     if (displays.length === 1) return true;
     const size = displays[0].size;
     return displays.slice(1).every(d => {
-        return d.size.width === size.width && d.size.height === size.height
+        return d.size.width === size.width && d.size.height === size.height;
     });
 }
 
-function startServer(webContents: WebContents, numDisplays: number) {
+function setupIpcHandlers(windows: BrowserWindow[]) {
+    ipcMain.on('comment-arrived-to-left-edge',
+        (event: any, text: string, offsetTopRatio: number, senderWindowIndex: number, numDisplays: number, isSingleWindow: boolean) => {
+            sendCommentToRenderer(text, offsetTopRatio, windows, senderWindowIndex + 1, numDisplays, isSingleWindow);
+    });
+}
+
+function sendCommentToRenderer(text: string, offsetTopRatio: number, windows: BrowserWindow[], windowIndex: number, numDisplays: number, isSingleWindow: boolean) {
+    const indexOffset = windows.slice(windowIndex).findIndex(w => !w.isDestroyed());
+    if (indexOffset === -1) {
+        return;
+    }
+    const availableWindowIndex = windowIndex + indexOffset;
+    windows[availableWindowIndex].webContents.send('comment', text, offsetTopRatio, availableWindowIndex, numDisplays, isSingleWindow);
+}
+
+function startServer(windows: BrowserWindow[], isSingleWindow: boolean, numDisplays: number) {
     net.createServer(conn => {
         conn.on('data', data => {
-            webContents.send('comment', data.toString(), numDisplays);
+            const offsetTopRatio = Math.random() * 0.9;
+            sendCommentToRenderer(data.toString(), offsetTopRatio, windows, 0, numDisplays, isSingleWindow);
             conn.end();
         });
     }).listen(2525);
+}
+
+interface Rect {
+    x: number;
+    y: number;
+    height: number;
+    width: number;
 }
