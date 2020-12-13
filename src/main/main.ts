@@ -1,4 +1,3 @@
-"use strict";
 import * as net from 'net';
 import * as path from 'path';
 import { app, BrowserWindow, Display, ipcMain, Rectangle } from 'electron';
@@ -22,12 +21,6 @@ function onAppReady() {
     const isSingleWindow = isSingleWindowForced || (!isMultiWindowForced && isDisplaySizesEqual(displays));
     const rects = calcWindowRects(displays, isSingleWindow);
     const windows = rects.map(r => createWindow(r));
-
-    if (process.env.NODE_ENV === 'development') {
-        if (!BrowserWindow.getDevToolsExtensions().hasOwnProperty('devtron')) {
-            BrowserWindow.addDevToolsExtension(require('devtron').path);
-        }
-    }
 
     setupIpcHandlers(windows);
     startServer(windows, isSingleWindow, displays.length);

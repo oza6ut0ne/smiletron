@@ -35,14 +35,6 @@ const main = {
     __dirname: false,
     __filename: false
   },
-  externals: [
-    function (context, request, callback) {
-      if (request.match(/devtron/)) {
-        return callback(null, 'commonjs ' + request)
-      }
-      callback();
-    }
-  ],
 };
 
 /** @type import('webpack').Configuration */
