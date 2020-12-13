@@ -4,6 +4,7 @@ import { app, BrowserWindow, Display, ipcMain, Rectangle } from 'electron';
 import { screen as electronScreen } from 'electron';
 
 const mainUrl = `file://${__dirname}/html/index.html`;
+let commentCount = 0;
 
 app.on('ready', () => setTimeout(onAppReady, 2000));
 app.on('window-all-closed', () => app.quit());
@@ -79,25 +80,29 @@ function isDisplaySizesEqual(displays: Display[]) {
 
 function setupIpcHandlers(windows: BrowserWindow[]) {
     ipcMain.on('comment-arrived-to-left-edge',
-        (event: any, text: string, offsetTopRatio: number, senderWindowIndex: number, numDisplays: number, isSingleWindow: boolean) => {
-            sendCommentToRenderer(text, offsetTopRatio, windows, senderWindowIndex + 1, numDisplays, isSingleWindow);
+        (event: any, text: string, commentCount: number, offsetTopRatio: number,
+        senderWindowIndex: number, numDisplays: number, isSingleWindow: boolean) => {
+            sendCommentToRenderer(text, commentCount, offsetTopRatio, windows, senderWindowIndex + 1, numDisplays, isSingleWindow);
     });
 }
 
-function sendCommentToRenderer(text: string, offsetTopRatio: number, windows: BrowserWindow[], windowIndex: number, numDisplays: number, isSingleWindow: boolean) {
+function sendCommentToRenderer(text: string, commentCount: number, offsetTopRatio: number,
+        windows: BrowserWindow[], windowIndex: number, numDisplays: number, isSingleWindow: boolean) {
     const indexOffset = windows.slice(windowIndex).findIndex(w => !w.isDestroyed());
     if (indexOffset === -1) {
         return;
     }
     const availableWindowIndex = windowIndex + indexOffset;
-    windows[availableWindowIndex].webContents.send('comment', text, offsetTopRatio, availableWindowIndex, numDisplays, isSingleWindow);
+    windows[availableWindowIndex].webContents.send(
+        'comment', text, commentCount, offsetTopRatio, availableWindowIndex, numDisplays, isSingleWindow);
 }
 
 function startServer(windows: BrowserWindow[], isSingleWindow: boolean, numDisplays: number) {
     net.createServer(conn => {
         conn.on('data', data => {
+            commentCount += 1;
             const offsetTopRatio = Math.random() * 0.9;
-            sendCommentToRenderer(data.toString(), offsetTopRatio, windows, 0, numDisplays, isSingleWindow);
+            sendCommentToRenderer(data.toString(), commentCount, offsetTopRatio, windows, 0, numDisplays, isSingleWindow);
             conn.end();
         });
     }).listen(2525);

@@ -26,9 +26,10 @@ function flashWindow() {
     document.body.animate(effect, timing);
 }
 
-function addComment(text: string, offsetTopRatio: number) {
+function addComment(text: string, commentCount: number, offsetTopRatio: number) {
     const comment = document.createElement('div')
     comment.className = 'comment';
+    comment.style.zIndex = commentCount.toString();
     comment.style.left = window.innerWidth + 'px';
     comment.style.top = Math.floor(window.innerHeight * offsetTopRatio) + 'px';
 
@@ -80,20 +81,25 @@ function startAnimation(div: HTMLDivElement, wideWindowFactor: number): number {
     return arrivalTimeMsec;
 }
 
-function handleComment(text: string, offsetTopRatio: number, windowIndex: number, numDisplays: number, isSingleWindow: boolean) {
-    const comment = addComment(text, offsetTopRatio);
+function handleComment(text: string, commentCount: number,
+        offsetTopRatio: number, windowIndex: number, numDisplays: number, isSingleWindow: boolean) {
+    const comment = addComment(text, commentCount, offsetTopRatio);
     const wideWindowFactor = isSingleWindow ? numDisplays : 1;
 
     setTimeout(() => {
         const arrivalTimeMsec = startAnimation(comment, wideWindowFactor);
         setTimeout(() => {
-            window.ipcRenderer.send('comment-arrived-to-left-edge', text, offsetTopRatio, windowIndex, numDisplays, isSingleWindow);
+            window.ipcRenderer.send(
+                'comment-arrived-to-left-edge', text, commentCount,
+                 offsetTopRatio, windowIndex, numDisplays, isSingleWindow);
         }, arrivalTimeMsec - IMAGE_LOADING_WAIT_MSEC);
     }, IMAGE_LOADING_WAIT_MSEC);
 }
 
-window.ipcRenderer.on('comment', (event: any, text: string, offsetTopRatio: number, windowIndex: number, numDisplays: number, isSingleWindow: boolean) => {
-    handleComment(text, offsetTopRatio, windowIndex, numDisplays, isSingleWindow);
+window.ipcRenderer.on('comment',
+    (event: any, text: string, commentCount: number, offsetTopRatio: number,
+    windowIndex: number, numDisplays: number, isSingleWindow: boolean) => {
+        handleComment(text, commentCount, offsetTopRatio, windowIndex, numDisplays, isSingleWindow);
 })
 
 function noTruncSplit(s: string, sep: string, limit: number) {
