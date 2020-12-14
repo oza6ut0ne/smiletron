@@ -50,7 +50,6 @@ function createWindow(rect: Rectangle): BrowserWindow {
         transparent: true,
         resizable: false,
         skipTaskbar: true,
-        type: 'dock',
         alwaysOnTop: true,
         webPreferences: {
             devTools: process.env.NODE_ENV === 'development',
@@ -60,6 +59,7 @@ function createWindow(rect: Rectangle): BrowserWindow {
     window.setSize(rect.width, rect.height);
     window.setAlwaysOnTop(true, 'screen-saver');
     window.setIgnoreMouseEvents(true);
+    window.setSkipTaskbar(true);
     window.loadURL(mainUrl);
 
     window.on('closed', () => {
