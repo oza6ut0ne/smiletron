@@ -1,6 +1,7 @@
 import { app, BrowserWindow, Menu, MenuItem, Tray } from 'electron';
 
 export let tray: Tray | null = null;
+let contextMenu: Menu | null = null;
 
 export function setupTray(iconPath: string) {
     tray = new Tray(iconPath);
@@ -14,7 +15,7 @@ export function setupTray(iconPath: string) {
     });
 
     const windows = BrowserWindow.getAllWindows();
-    const contextMenu = Menu.buildFromTemplate([
+    contextMenu = Menu.buildFromTemplate([
         { label: 'Restore', click: () => {
             windows.forEach(w => aliveOrNull(w)?.show());
         }},
@@ -38,29 +39,99 @@ export function setupTray(iconPath: string) {
 }
 
 function addDebugMenu(contextMenu: Menu, windows: BrowserWindow[]) {
-    contextMenu.append(new MenuItem({ label: 'Debug Memu',
-        submenu: windows.map((w, i) => {
-            return { label: `Window ${i}`, submenu: [
-                { label: `DevTools`, click: () => aliveOrNull(w)?.webContents.toggleDevTools() },
-                { label: 'MouseEvents', submenu: [
-                    { label: 'enabled', type: 'radio', click: () =>
-                        aliveOrNull(w)?.setIgnoreMouseEvents(false)
-                    },
-                    { label: 'disabled', type: 'radio', checked: true, click: () =>
-                        aliveOrNull(w)?.setIgnoreMouseEvents(true)
-                    },
-                ]},
-                { label: 'Taskbar', submenu: [
-                    { label: 'enabled', type: 'radio', click: () =>
-                        aliveOrNull(w)?.setSkipTaskbar(false)
-                    },
-                    { label: 'disabled', type: 'radio', checked: true, click: () =>
-                        aliveOrNull(w)?.setSkipTaskbar(true)
-                    },
-                ]},
-            ]};
-        })
-    }));
+    const perWindowMenuItems = (
+        windows.map((w, i) => constructPerWindowsDebugMenuItem(w, i))
+    );
+
+    const devToolsMenuItem = new MenuItem({ label: 'DevTools',
+        submenu: [
+            { label: 'open', click: () => windows.forEach(w => {
+                aliveOrNull(w)?.webContents.openDevTools();
+            })},
+            { label: 'close', click: () => windows.forEach(w => {
+                aliveOrNull(w)?.webContents.closeDevTools();
+            })},
+        ]}
+    );
+
+    const mouseEventsMenuItem  = new MenuItem({ label: 'MouseEvents',
+        submenu: [
+            { label: 'enable', click: () => windows.forEach((w, i) => {
+                aliveOrNull(w)?.setIgnoreMouseEvents(false);
+                putCheckOnItem(contextMenu.getMenuItemById(`MouseEvents ${i} enabled`), true);
+                refreshContextMenu();
+            })},
+            { label: 'disable', click: () => windows.forEach((w, i) => {
+                aliveOrNull(w)?.setIgnoreMouseEvents(true);
+                putCheckOnItem(contextMenu.getMenuItemById(`MouseEvents ${i} disabled`), true);
+                refreshContextMenu();
+            })},
+        ]},
+    );
+
+    const taskbarMenuItem  = new MenuItem({ label: 'Taskbar',
+        submenu: [
+            { label: 'enable', click: () => windows.forEach((w, i) => {
+                aliveOrNull(w)?.setSkipTaskbar(false);
+                putCheckOnItem(contextMenu.getMenuItemById(`Taskbar ${i} enabled`), true);
+                refreshContextMenu();
+            })},
+            { label: 'disable', click: () => windows.forEach((w, i) => {
+                aliveOrNull(w)?.setSkipTaskbar(true);
+                putCheckOnItem(contextMenu.getMenuItemById(`Taskbar ${i} disabled`), true);
+                refreshContextMenu();
+            })},
+        ]},
+    );
+
+    const debugSubMenu = Menu.buildFromTemplate([
+        devToolsMenuItem,
+        mouseEventsMenuItem,
+        taskbarMenuItem,
+        { type: 'separator' },
+        ...perWindowMenuItems
+    ]);
+
+    const debugMenu = new MenuItem({ label: 'Debug Memu', submenu: debugSubMenu });
+    contextMenu.append(debugMenu);
+}
+
+function constructPerWindowsDebugMenuItem(window: BrowserWindow, index: number): MenuItem {
+    return new MenuItem({ label: `Window ${index}`, submenu: [
+        { label: `Toggle DevTools`, click: () => aliveOrNull(window)?.webContents.toggleDevTools() },
+        { label: 'MouseEvents', submenu: [
+            { label: 'enabled', id: `MouseEvents ${index} enabled`,
+              type: 'radio', click: () =>
+                  aliveOrNull(window)?.setIgnoreMouseEvents(false)
+            },
+            { label: 'disabled', id: `MouseEvents ${index} disabled`,
+              type: 'radio', checked: true, click: () =>
+                  aliveOrNull(window)?.setIgnoreMouseEvents(true)
+            },
+        ]},
+        { label: 'Taskbar', submenu: [
+            { label: 'enabled', id: `Taskbar ${index} enabled`,
+              type: 'radio', click: () =>
+                  aliveOrNull(window)?.setSkipTaskbar(false)
+            },
+            { label: 'disabled', id: `Taskbar ${index} disabled`,
+              type: 'radio', checked: true, click: () =>
+                  aliveOrNull(window)?.setSkipTaskbar(true)
+            },
+        ]},
+    ]});
+}
+
+function refreshContextMenu() {
+    if (contextMenu !== null) {
+        tray?.setContextMenu(contextMenu);
+    }
+}
+
+function putCheckOnItem(item: MenuItem | null, isChecked: boolean) {
+    if (item !== null) {
+        item.checked = isChecked;
+    }
 }
 
 function aliveOrNull(window: BrowserWindow): BrowserWindow | null {
