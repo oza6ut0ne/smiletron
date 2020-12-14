@@ -1,8 +1,13 @@
+import { IpcRendererEvent } from 'electron';
+import { Comment, RendererInfo } from '../../common/types';
+import { noTruncSplit } from '../../common/util';
 import window from './window';
+
 const SEPARATOR = '##SEP##';
 const DURATION_PER_DISPLAY_MSEC = 5000;
 const FLASHING_DECAY_TIME_MSEC = 1000;
 const IMAGE_LOADING_WAIT_MSEC = 100;
+
 
 document.addEventListener('DOMContentLoaded', () => {
     for (const eventType of ['focus', 'resize']) {
@@ -26,14 +31,15 @@ function flashWindow() {
     document.body.animate(effect, timing);
 }
 
-function addComment(text: string, commentCount: number, offsetTopRatio: number) {
-    const comment = document.createElement('div')
-    comment.className = 'comment';
-    comment.style.zIndex = commentCount.toString();
-    comment.style.left = window.innerWidth + 'px';
-    comment.style.top = Math.floor(window.innerHeight * offsetTopRatio) + 'px';
+function addComment(comment: Comment) {
+    const commentDiv = document.createElement('div');
+    commentDiv.className = 'comment';
+    commentDiv.style.zIndex = comment.id.toString();
+    commentDiv.style.left = window.innerWidth + 'px';
+    commentDiv.style.top = Math.floor(window.innerHeight * comment.offsetTopRatio) + 'px';
 
     const iconImg: HTMLImageElement = document.createElement('img');
+    let text = comment.text;
     if (text.indexOf(SEPARATOR) !== -1) {
         [iconImg.src, text] = noTruncSplit(text, SEPARATOR, 1);
         iconImg.onerror = () => iconImg.remove();
@@ -43,24 +49,26 @@ function addComment(text: string, commentCount: number, offsetTopRatio: number) 
     const span = document.createElement('span');
     span.className = 'content';
     span.textContent = text;
-    comment.appendChild(span);
+    commentDiv.appendChild(span);
 
-    document.body.appendChild(comment);
+    document.body.appendChild(commentDiv);
     if (iconImg.src) {
         iconImg.height = span.offsetHeight;
-        comment.prepend(iconImg);
+        commentDiv.prepend(iconImg);
     }
 
-    const protrusionBottom = comment.offsetTop + comment.offsetHeight - window.innerHeight;
+    const protrusionBottom = commentDiv.offsetTop + commentDiv.offsetHeight - window.innerHeight;
     if (protrusionBottom > 0) {
-        const newTop = comment.offsetTop - protrusionBottom;
-        comment.style.top = (newTop > 0 ? newTop : 0) + 'px';
+        const newTop = commentDiv.offsetTop - protrusionBottom;
+        commentDiv.style.top = (newTop > 0 ? newTop : 0) + 'px';
     }
 
-    return comment;
+    return commentDiv;
 }
 
-function startAnimation(div: HTMLDivElement, wideWindowFactor: number): number {
+function startAnimation(div: HTMLDivElement, rendererInfo: RendererInfo): number {
+    const wideWindowFactor = rendererInfo.isSingleWindow ? rendererInfo.numDisplays : 1;
+
     const effect = [
         { left: window.innerWidth + 'px' },
         { left: -div.offsetWidth * wideWindowFactor + 'px' }
@@ -81,29 +89,18 @@ function startAnimation(div: HTMLDivElement, wideWindowFactor: number): number {
     return arrivalTimeMsec;
 }
 
-function handleComment(text: string, commentCount: number,
-        offsetTopRatio: number, windowIndex: number, numDisplays: number, isSingleWindow: boolean) {
-    const comment = addComment(text, commentCount, offsetTopRatio);
-    const wideWindowFactor = isSingleWindow ? numDisplays : 1;
+function handleComment(comment: Comment, rendererInfo: RendererInfo) {
+    const commentDiv = addComment(comment);
 
     setTimeout(() => {
-        const arrivalTimeMsec = startAnimation(comment, wideWindowFactor);
+        const arrivalTimeMsec = startAnimation(commentDiv, rendererInfo);
         setTimeout(() => {
-            window.ipcRenderer.send(
-                'comment-arrived-to-left-edge', text, commentCount,
-                 offsetTopRatio, windowIndex, numDisplays, isSingleWindow);
+            window.ipcRenderer.send('comment-arrived-to-left-edge', comment, rendererInfo.windowIndex);
         }, arrivalTimeMsec - IMAGE_LOADING_WAIT_MSEC);
     }, IMAGE_LOADING_WAIT_MSEC);
 }
 
 window.ipcRenderer.on('comment',
-    (event: any, text: string, commentCount: number, offsetTopRatio: number,
-    windowIndex: number, numDisplays: number, isSingleWindow: boolean) => {
-        handleComment(text, commentCount, offsetTopRatio, windowIndex, numDisplays, isSingleWindow);
+    (event: IpcRendererEvent, comment: Comment, rendererInfo: RendererInfo) => {
+        handleComment(comment, rendererInfo);
 })
-
-function noTruncSplit(s: string, sep: string, limit: number) {
-    const parts = s.split(sep, limit);
-    parts.push(s.slice(parts.join('').length + (sep.length * limit)));
-    return parts;
-}

@@ -1,13 +1,15 @@
-import net from 'net';
 import path from 'path';
-import { app, BrowserWindow, Display, ipcMain, Rectangle } from 'electron';
+import { app, BrowserWindow, Display, Rectangle } from 'electron';
 import { screen as electronScreen } from 'electron';
+
 import { setupTray, tray } from './tray';
+import { Rect } from './types';
+import { setupIpcHandlers } from './ipc';
+import { startTcpServer } from './coment-source/tcpServer';
 
 const mainUrl = `file://${__dirname}/html/index.html`;
 const assetsPath = app.isPackaged ? path.join(process.resourcesPath, 'assets') : 'src/assets';
 const iconPath = path.join(assetsPath, 'icon.png');
-let commentCount = 0;
 
 
 app.on('ready', () => setTimeout(onAppReady, 2000));
@@ -30,10 +32,10 @@ function onAppReady() {
     if (process.platform !== 'darwin') {
         setupTray(iconPath);
     }
-    setupIpcHandlers(windows);
-    startServer(windows, isSingleWindow, displays.length);
-}
 
+    const commentSender = setupIpcHandlers(windows, isSingleWindow, displays.length);
+    startTcpServer(commentSender, 2525);
+}
 
 function createWindow(rect: Rectangle): BrowserWindow {
     let window: BrowserWindow | null = new BrowserWindow({
@@ -96,41 +98,4 @@ function isDisplaySizesEqual(displays: Display[]) {
     return displays.slice(1).every(d => {
         return d.size.width === size.width && d.size.height === size.height;
     });
-}
-
-function setupIpcHandlers(windows: BrowserWindow[]) {
-    ipcMain.on('comment-arrived-to-left-edge',
-        (event: any, text: string, commentCount: number, offsetTopRatio: number,
-        senderWindowIndex: number, numDisplays: number, isSingleWindow: boolean) => {
-            sendCommentToRenderer(text, commentCount, offsetTopRatio, windows, senderWindowIndex + 1, numDisplays, isSingleWindow);
-    });
-}
-
-function sendCommentToRenderer(text: string, commentCount: number, offsetTopRatio: number,
-        windows: BrowserWindow[], windowIndex: number, numDisplays: number, isSingleWindow: boolean) {
-    const indexOffset = windows.slice(windowIndex).findIndex(w => !w.isDestroyed());
-    if (indexOffset === -1) {
-        return;
-    }
-    const availableWindowIndex = windowIndex + indexOffset;
-    windows[availableWindowIndex].webContents.send(
-        'comment', text, commentCount, offsetTopRatio, availableWindowIndex, numDisplays, isSingleWindow);
-}
-
-function startServer(windows: BrowserWindow[], isSingleWindow: boolean, numDisplays: number) {
-    net.createServer(conn => {
-        conn.on('data', data => {
-            commentCount += 1;
-            const offsetTopRatio = Math.random() * 0.9;
-            sendCommentToRenderer(data.toString(), commentCount, offsetTopRatio, windows, 0, numDisplays, isSingleWindow);
-            conn.end();
-        });
-    }).listen(2525);
-}
-
-interface Rect {
-    x: number;
-    y: number;
-    height: number;
-    width: number;
 }

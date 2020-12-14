@@ -1,6 +1,5 @@
 interface ElectronWindow extends Window {
-    ipcRenderer: any,
-    __devtron: { require: NodeRequire, process: NodeJS.Process }
+    ipcRenderer: Electron.IpcRenderer,
 }
 
 declare var window: ElectronWindow;
