@@ -50,6 +50,7 @@ function createWindow(rect: Rectangle): BrowserWindow {
         icon: iconPath,
         show: true,
         transparent: true,
+        backgroundColor: "#00000000",
         resizable: false,
         skipTaskbar: true,
         alwaysOnTop: true,
@@ -76,7 +77,6 @@ function createWindow(rect: Rectangle): BrowserWindow {
     window.on('restore', () => {
         tray?.setToolTip(app.name);
     });
-    window.webContents.on('devtools-closed', () => window?.reload());
 
     return window;
 }
