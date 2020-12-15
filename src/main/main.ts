@@ -83,17 +83,17 @@ function createWindow(rect: Rectangle): BrowserWindow {
 
 function calcWindowRects(displays: Display[], isSingleWindow: boolean): Rect[] {
     if (!isSingleWindow) {
-        if (process.platform === 'darwin') {
-            return displays.sort((a, b) => b.bounds.x - a.bounds.x).map(d => d.bounds);
-        } else {
+        if (process.platform === 'linux') {
             return displays.sort((a, b) => b.workArea.x - a.workArea.x).map(d => d.workArea);
+        } else {
+            return displays.sort((a, b) => b.bounds.x - a.bounds.x).map(d => d.bounds);
         }
     }
 
     var width = 0;
     var minHeight = Infinity;
     displays.forEach(d => {
-        let bounds = (process.platform === 'darwin') ? d.bounds : d.workArea;
+        let bounds = (process.platform === 'linux') ? d.workArea : d.bounds;
         width += bounds.width;
         minHeight = minHeight < bounds.height ? minHeight : bounds.height;
     });
