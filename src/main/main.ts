@@ -80,14 +80,14 @@ function createWindow(rect: Rectangle): BrowserWindow {
 
 function calcWindowRects(displays: Display[], isSingleWindow: boolean): Rect[] {
     if (!isSingleWindow) {
-        return displays.sort((a, b) => b.bounds.x - a.bounds.x).map(d => d.bounds);
+        return displays.sort((a, b) => b.workArea.x - a.workArea.x).map(d => d.workArea);
     }
 
     var width = 0;
     var minHeight = Infinity;
     displays.forEach(d => {
-        width += d.size.width;
-        minHeight = minHeight < d.size.height ? minHeight : d.size.height;
+        width += d.workArea.width;
+        minHeight = minHeight < d.workArea.height ? minHeight : d.workArea.height;
     });
     return [{x: 0, y:0, width: width, height: minHeight}];
 }
