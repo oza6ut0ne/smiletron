@@ -13,10 +13,10 @@ document.addEventListener('DOMContentLoaded', () => {
     for (const eventType of ['focus', 'resize']) {
         window.addEventListener(eventType, () => flashWindow());
     }
-    flashWindow();
+    flashWindow().onfinish = flashWindow;
 });
 
-function flashWindow() {
+function flashWindow(): Animation {
     const effect = [
         { background: 'rgb(0, 255, 0, 0.3)' },
         { background: 'rgb(0, 0, 0, 0)' }
@@ -28,7 +28,7 @@ function flashWindow() {
         easing: 'linear'
     };
 
-    document.body.animate(effect, timing);
+    return document.body.animate(effect, timing);
 }
 
 function addComment(comment: Comment) {

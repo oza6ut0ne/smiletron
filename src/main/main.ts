@@ -12,7 +12,9 @@ const assetsPath = app.isPackaged ? path.join(process.resourcesPath, 'assets') :
 const iconPath = path.join(assetsPath, 'icon.png');
 
 
-app.on('ready', () => setTimeout(onAppReady, 2000));
+app.disableHardwareAcceleration();
+app.commandLine.appendSwitch('disable-gpu');
+app.whenReady().then(() => setTimeout(onAppReady, 2000));
 app.on('window-all-closed', () => app.quit());
 
 function onAppReady() {
@@ -40,7 +42,7 @@ function onAppReady() {
 function createWindow(rect: Rectangle): BrowserWindow {
     let window: BrowserWindow | null = new BrowserWindow({
         x: rect.x,
-        y: rect.y,
+        y: rect.y + 1,
         width: rect.width,
         height: rect.height,
         enableLargerThanScreen: true,
@@ -57,6 +59,7 @@ function createWindow(rect: Rectangle): BrowserWindow {
         }
     });
     window.setSize(rect.width, rect.height);
+    window.setBounds(rect);
     window.setAlwaysOnTop(true, 'screen-saver');
     window.setIgnoreMouseEvents(true);
     window.setSkipTaskbar(true);
@@ -80,20 +83,27 @@ function createWindow(rect: Rectangle): BrowserWindow {
 
 function calcWindowRects(displays: Display[], isSingleWindow: boolean): Rect[] {
     if (!isSingleWindow) {
-        return displays.sort((a, b) => b.workArea.x - a.workArea.x).map(d => d.workArea);
+        if (process.platform === 'darwin') {
+            return displays.sort((a, b) => b.bounds.x - a.bounds.x).map(d => d.bounds);
+        } else {
+            return displays.sort((a, b) => b.workArea.x - a.workArea.x).map(d => d.workArea);
+        }
     }
 
     var width = 0;
     var minHeight = Infinity;
     displays.forEach(d => {
-        width += d.workArea.width;
-        minHeight = minHeight < d.workArea.height ? minHeight : d.workArea.height;
+        let bounds = (process.platform === 'darwin') ? d.bounds : d.workArea;
+        width += bounds.width;
+        minHeight = minHeight < bounds.height ? minHeight : bounds.height;
     });
     return [{x: 0, y:0, width: width, height: minHeight}];
 }
 
 function isDisplaySizesEqual(displays: Display[]) {
-    if (displays.length === 1) return true;
+    if (displays.length === 1) {
+        return true
+    };
     const size = displays[0].size;
     return displays.slice(1).every(d => {
         return d.size.width === size.width && d.size.height === size.height;
