@@ -6,7 +6,8 @@ import window from './window';
 const SEPARATOR = '##SEP##';
 const DURATION_PER_DISPLAY_MSEC = 5000;
 const FLASHING_DECAY_TIME_MSEC = 1000;
-const IMAGE_LOADING_WAIT_MSEC = 100;
+
+let isPause = false;
 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -31,31 +32,24 @@ function flashWindow(): Animation {
     return document.body.animate(effect, timing);
 }
 
-function addComment(comment: Comment) {
+function addComment(comment: Comment): Promise<HTMLDivElement> {
     const commentDiv = document.createElement('div');
     commentDiv.className = 'comment';
     commentDiv.style.zIndex = comment.id.toString();
     commentDiv.style.left = window.innerWidth + 'px';
     commentDiv.style.top = Math.floor(window.innerHeight * comment.offsetTopRatio) + 'px';
 
-    const iconImg: HTMLImageElement = document.createElement('img');
     let text = comment.text;
+    let imgSrc = '';
     if (text.indexOf(SEPARATOR) !== -1) {
-        [iconImg.src, text] = noTruncSplit(text, SEPARATOR, 1);
-        iconImg.onerror = () => iconImg.remove();
-        iconImg.className = 'icon';
+        [imgSrc, text] = noTruncSplit(text, SEPARATOR, 1);
     }
 
     const span = document.createElement('span');
     span.className = 'content';
     span.textContent = text;
     commentDiv.appendChild(span);
-
     document.body.appendChild(commentDiv);
-    if (iconImg.src) {
-        iconImg.height = span.offsetHeight;
-        commentDiv.prepend(iconImg);
-    }
 
     const protrusionBottom = commentDiv.offsetTop + commentDiv.offsetHeight - window.innerHeight;
     if (protrusionBottom > 0) {
@@ -63,44 +57,75 @@ function addComment(comment: Comment) {
         commentDiv.style.top = (newTop > 0 ? newTop : 0) + 'px';
     }
 
-    return commentDiv;
+    return new Promise((resolve) => {
+        if (!imgSrc) {
+            resolve(commentDiv);
+            return;
+        }
+
+        const iconImg: HTMLImageElement = document.createElement('img');
+        iconImg.onload = () => {
+            resolve(commentDiv)
+        };
+        iconImg.onerror = () => {
+            iconImg.remove();
+            resolve(commentDiv);
+        };
+
+        iconImg.className = 'icon';
+        iconImg.height = span.offsetHeight;
+        iconImg.src = imgSrc;
+        commentDiv.prepend(iconImg);
+    });
 }
 
-function startAnimation(div: HTMLDivElement, rendererInfo: RendererInfo): number {
-    const wideWindowFactor = rendererInfo.isSingleWindow ? rendererInfo.numDisplays : 1;
-
-    const effect = [
-        { left: window.innerWidth + 'px' },
-        { left: -div.offsetWidth * wideWindowFactor + 'px' }
+function animateToLeft(div: HTMLDivElement, start: number, end: number, duration: number): Promise<Animation> {
+    const efect = [
+        { left: start + 'px' },
+        { left: end + 'px' }
     ];
 
     const timing = {
-        duration: DURATION_PER_DISPLAY_MSEC * wideWindowFactor,
+        duration: duration,
         iterations: 1,
         easing: 'linear'
     };
 
-    div.animate(effect, timing).onfinish = function () {
-        document.body.removeChild(div);
-    };
+    const animation = div.animate(efect, timing);
+    if (isPause) {
+        animation.pause();
+    }
 
-    const velocity = (window.innerWidth + div.offsetWidth) / DURATION_PER_DISPLAY_MSEC;
-    const arrivalTimeMsec = window.innerWidth / velocity;
-    return arrivalTimeMsec;
+    return animation.finished;
 }
 
-function handleComment(comment: Comment, rendererInfo: RendererInfo) {
-    const commentDiv = addComment(comment);
+async function handleComment(comment: Comment, rendererInfo: RendererInfo) {
+    const commentDiv = await addComment(comment);
+    const wideWindowFactor = rendererInfo.isSingleWindow ? rendererInfo.numDisplays : 1;
+    const durationRatio = 1 / (1 + commentDiv.offsetWidth * wideWindowFactor / window.innerWidth);
 
-    setTimeout(() => {
-        const arrivalTimeMsec = startAnimation(commentDiv, rendererInfo);
-        setTimeout(() => {
-            window.ipcRenderer.send('comment-arrived-to-left-edge', comment, rendererInfo.windowIndex);
-        }, arrivalTimeMsec - IMAGE_LOADING_WAIT_MSEC);
-    }, IMAGE_LOADING_WAIT_MSEC);
+    animateToLeft(commentDiv, window.innerWidth, 0,
+                  DURATION_PER_DISPLAY_MSEC * wideWindowFactor * durationRatio)
+    .then(() => {
+        window.ipcRenderer.send('comment-arrived-to-left-edge', comment, rendererInfo.windowIndex);
+        return animateToLeft(commentDiv, 0, -commentDiv.offsetWidth * wideWindowFactor,
+                             DURATION_PER_DISPLAY_MSEC * wideWindowFactor * (1 - durationRatio));
+    }).then(() => {
+        document.body.removeChild(commentDiv);
+    });
 }
 
 window.ipcRenderer.on('comment',
     (event: IpcRendererEvent, comment: Comment, rendererInfo: RendererInfo) => {
         handleComment(comment, rendererInfo);
-})
+});
+
+window.ipcRenderer.on('toggle-pause', () => {
+    if (isPause) {
+        isPause = false;
+        document.getAnimations().forEach(a => a.play());
+    } else {
+        isPause = true;
+        document.getAnimations().forEach(a => a.pause());
+    }
+});

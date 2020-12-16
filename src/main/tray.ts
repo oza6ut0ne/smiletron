@@ -43,6 +43,10 @@ function addDebugMenu(contextMenu: Menu, windows: BrowserWindow[]) {
         windows.map((w, i) => constructPerWindowsDebugMenuItem(w, i))
     );
 
+    const togglePauseMenuItem = new MenuItem(({ label: 'Pause / Unpause', click: () =>
+        windows.forEach(w => aliveOrNull(w)?.webContents.send('toggle-pause'))
+    }));
+
     const devToolsMenuItem = new MenuItem({ label: 'DevTools',
         submenu: [
             { label: 'open', click: () => windows.forEach(w => {
@@ -85,6 +89,7 @@ function addDebugMenu(contextMenu: Menu, windows: BrowserWindow[]) {
     );
 
     const debugSubMenu = Menu.buildFromTemplate([
+        togglePauseMenuItem,
         devToolsMenuItem,
         mouseEventsMenuItem,
         taskbarMenuItem,
