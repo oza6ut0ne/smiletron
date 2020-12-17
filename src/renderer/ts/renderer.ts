@@ -1,7 +1,6 @@
-import { IpcRendererEvent } from 'electron';
 import { Comment, RendererInfo } from '../../common/types';
 import { noTruncSplit } from '../../common/util';
-import window from './window';
+import './window';
 
 const SEPARATOR = '##SEP##';
 const DURATION_PER_DISPLAY_MSEC = 5000;
@@ -107,7 +106,7 @@ async function handleComment(comment: Comment, rendererInfo: RendererInfo) {
     animateToLeft(commentDiv, window.innerWidth, 0,
                   DURATION_PER_DISPLAY_MSEC * wideWindowFactor * durationRatio)
     .then(() => {
-        window.ipcRenderer.send('comment-arrived-to-left-edge', comment, rendererInfo.windowIndex);
+        window.electron.notifyCommentArrivedToLeftEdge(comment, rendererInfo.windowIndex);
         return animateToLeft(commentDiv, 0, -commentDiv.offsetWidth * wideWindowFactor,
                              DURATION_PER_DISPLAY_MSEC * wideWindowFactor * (1 - durationRatio));
     }).then(() => {
@@ -115,12 +114,8 @@ async function handleComment(comment: Comment, rendererInfo: RendererInfo) {
     });
 }
 
-window.ipcRenderer.on('comment',
-    (event: IpcRendererEvent, comment: Comment, rendererInfo: RendererInfo) => {
-        handleComment(comment, rendererInfo);
-});
-
-window.ipcRenderer.on('toggle-pause', () => {
+window.electron.onCommentReceived(handleComment);
+window.electron.onTogglePause(() => {
     if (isPause) {
         isPause = false;
         document.getAnimations().forEach(a => a.play());

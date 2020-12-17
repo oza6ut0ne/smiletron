@@ -51,10 +51,10 @@ const renderer = {
 const preload = {
   ...baseConfig,
   target: 'electron-preload',
-  entry: path.join(__dirname, 'src/renderer/ts/preload'),
+  entry: path.join(__dirname, 'src/preload/preload'),
   output: {
     filename: 'preload.js',
-    path: path.join(__dirname, 'dist/js')
+    path: path.join(__dirname, 'dist')
   }
 };
 

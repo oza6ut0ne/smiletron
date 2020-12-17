@@ -56,7 +56,8 @@ function createWindow(rect: Rectangle): BrowserWindow {
         alwaysOnTop: true,
         webPreferences: {
             devTools: process.env.NODE_ENV === 'development',
-            preload: path.join(__dirname, 'js/preload.js')
+            contextIsolation: true,
+            preload: path.join(__dirname, 'preload.js')
         }
     });
     window.setSize(rect.width, rect.height);
