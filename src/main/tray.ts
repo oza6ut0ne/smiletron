@@ -34,6 +34,10 @@ export function setupTray(iconPath: string) {
         addDebugMenu(contextMenu, windows);
     }
 
+    contextMenu.append(new MenuItem({ label: 'Restart', click: () => {
+        app.relaunch();
+        app.quit();
+    }}));
     contextMenu.append(new MenuItem({ role: 'quit' }));
     tray.setContextMenu(contextMenu);
 }
