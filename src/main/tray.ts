@@ -1,7 +1,9 @@
 import { app, BrowserWindow, Menu, MenuItem, Tray } from 'electron';
+import { config, toggleStatusWithAuto } from './config';
 
 export let tray: Tray | null = null;
 let contextMenu: Menu | null = null;
+
 
 export function setupTray(iconPath: string) {
     tray = new Tray(iconPath);
@@ -22,12 +24,23 @@ export function setupTray(iconPath: string) {
         { label: 'Minimize', click: () => {
             windows.forEach(w => aliveOrNull(w)?.minimize());
         }},
-        { label: 'Windows', submenu: windows.map((w, i) => {
-            return { label: `Window ${i}`, submenu: [
-                { label: 'Restore', click: () => aliveOrNull(w)?.show() },
-                { label: 'Minimize', click: () => aliveOrNull(w)?.minimize() }
-            ]};
-        })}
+        { label: 'Windows', visible: (windows.length > 1),
+          submenu: windows.map((w, i) => {
+              return { label: `Window ${i}`, submenu: [
+                  { label: 'Restore', click: () => aliveOrNull(w)?.show() },
+                  { label: 'Minimize', click: () => aliveOrNull(w)?.minimize() }
+              ]};
+        })},
+        { label: 'Config', submenu: [
+            { label: 'Multi Window', submenu: toggleStatusWithAuto.map(v => {
+                return { label: v, checked: config.useMultiWindow === v,
+                         type: 'radio', click: () => {
+                             config.useMultiWindow = v;
+                             app.relaunch();
+                             app.quit();
+                }}
+            })}
+        ]}
     ]);
 
     if (process.env.NODE_ENV === 'development') {

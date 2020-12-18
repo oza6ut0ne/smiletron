@@ -6,6 +6,7 @@ import { setupTray, tray } from './tray';
 import { Rect } from './types';
 import { setupIpcHandlers } from './ipc';
 import { startTcpServer } from './coment-source/tcpServer';
+import { config } from './config';
 
 const mainUrl = `file://${__dirname}/html/index.html`;
 const assetsPath = app.isPackaged ? path.join(process.resourcesPath, 'assets') : 'src/assets';
@@ -18,13 +19,8 @@ app.whenReady().then(() => setTimeout(onAppReady, 2000));
 app.on('window-all-closed', () => app.quit());
 
 function onAppReady() {
-    const isSingleWindowForced = process.argv.some(a => {
-        return a === '--single-window' || a === '-s';
-    });
-
-    const isMultiWindowForced = process.argv.some(a => {
-        return a === '--multi-window' || a === '-m';
-    });
+    const isSingleWindowForced = config.useMultiWindow === 'disabled';
+    const isMultiWindowForced = config.useMultiWindow === 'enabled';
 
     const displays = electronScreen.getAllDisplays();
     const isSingleWindow = isSingleWindowForced || (!isMultiWindowForced && isDisplaySizesEqual(displays));
