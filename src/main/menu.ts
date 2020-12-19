@@ -3,6 +3,8 @@ import { aliveOrNull } from '../common/util';
 import { config, toggleStatusWithAuto } from './config';
 import { togglePause } from './ipc';
 
+const isAppImage = process.platform === 'linux' && app.isPackaged && app.getPath('exe').startsWith('/tmp/.mount_');
+
 export let tray: Tray | null = null;
 let trayMenu: Menu | null = null;
 
@@ -48,8 +50,10 @@ function createTrayMenu(windows: BrowserWindow[]): Menu {
                 return { label: v, checked: config.useMultiWindow === v,
                          type: 'radio', click: () => {
                              config.useMultiWindow = v;
-                             app.relaunch();
-                             app.quit();
+                             if (!isAppImage) {
+                                app.relaunch();
+                                app.quit();
+                             }
                 }}
             })}
         ]}
@@ -59,7 +63,7 @@ function createTrayMenu(windows: BrowserWindow[]): Menu {
         addDebugMenu(contextMenu, windows);
     }
 
-    contextMenu.append(new MenuItem({ label: 'Restart', click: () => {
+    contextMenu.append(new MenuItem({ label: 'Restart', visible: !isAppImage, click: () => {
         app.relaunch();
         app.quit();
     }}));
