@@ -1,22 +1,29 @@
 import path from 'path';
+import yargs from 'yargs';
 import { app, BrowserWindow, Display, Rectangle } from 'electron';
 import { screen as electronScreen } from 'electron';
 
-import { setupMenu, tray } from './menu';
-import { Rect } from './types';
-import { setupIpcHandlers } from './ipc';
 import { startTcpServer } from './coment-source/tcpServer';
 import { config } from './config';
+import { setupIpcHandlers } from './ipc';
+import { setupMenu, tray } from './menu';
+import { Rect } from './types';
 
 const mainUrl = `file://${__dirname}/html/index.html`;
 const assetsPath = app.isPackaged ? path.join(process.resourcesPath, 'assets') : 'src/assets';
 const iconPath = path.join(assetsPath, 'icon.png');
+const args = yargs(process.argv.slice(1)).options({
+    p: { type: 'number', alias: 'port', default: config.listenPort,
+         description: 'Listen port. Set -1 to disable.' },
+    b: { type: 'string', alias: 'bind', default: config.bindAddress,
+         description: 'Bind address.' }
+}).argv;
 
 
 app.disableHardwareAcceleration();
 app.commandLine.appendSwitch('disable-gpu');
 app.whenReady().then(() => setTimeout(onAppReady, 2000));
-app.on('window-all-closed', () => app.quit());
+app.on('window-all-closed', app.quit);
 
 function onAppReady() {
     const isSingleWindowForced = config.useMultiWindow === 'disabled';
@@ -32,7 +39,7 @@ function onAppReady() {
     }
 
     const commentSender = setupIpcHandlers(windows, isSingleWindow, displays.length);
-    startTcpServer(commentSender, 2525);
+    startTcpServer(commentSender, args.p, args.b);
 }
 
 function createWindow(rect: Rectangle): BrowserWindow {
