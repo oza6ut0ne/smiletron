@@ -4,6 +4,8 @@ import { config, toggleStatusWithAuto } from './config';
 import { togglePause } from './ipc';
 
 const isAppImage = process.platform === 'linux' && app.isPackaged && app.getPath('exe').startsWith('/tmp/.mount_');
+const isExe = process.platform === 'win32' && app.isPackaged;
+const relaunchExecPath = isExe ? process.env.PORTABLE_EXECUTABLE_FILE : undefined;
 
 export let tray: Tray | null = null;
 let trayMenu: Menu | null = null;
@@ -51,7 +53,7 @@ function createTrayMenu(windows: BrowserWindow[]): Menu {
                          type: 'radio', click: () => {
                              config.useMultiWindow = v;
                              if (!isAppImage) {
-                                app.relaunch();
+                                app.relaunch({ execPath: relaunchExecPath });
                                 app.quit();
                              }
                 }}
@@ -64,7 +66,7 @@ function createTrayMenu(windows: BrowserWindow[]): Menu {
     }
 
     contextMenu.append(new MenuItem({ label: 'Restart', visible: !isAppImage, click: () => {
-        app.relaunch();
+        app.relaunch({ execPath: relaunchExecPath });
         app.quit();
     }}));
     contextMenu.append(new MenuItem({ role: 'quit' }));
