@@ -1,5 +1,6 @@
 import { BrowserWindow, ipcMain, IpcMainEvent } from 'electron';
 import { Comment, RendererInfo } from '../common/types';
+import { aliveOrNull } from '../common/util';
 
 
 export interface ICommentSender {
@@ -52,4 +53,8 @@ class CommentSender implements ICommentSender {
 
 export function setupIpcHandlers(windows: BrowserWindow[], isSingleWindow: boolean, numDisplays: number): ICommentSender {
     return CommentSender.create(windows, isSingleWindow, numDisplays);
+}
+
+export function togglePause() {
+    BrowserWindow.getAllWindows().forEach(w => aliveOrNull(w)?.webContents.send('toggle-pause'));
 }

@@ -2,7 +2,7 @@ import path from 'path';
 import { app, BrowserWindow, Display, Rectangle } from 'electron';
 import { screen as electronScreen } from 'electron';
 
-import { setupTray, tray } from './tray';
+import { setupMenu, tray } from './menu';
 import { Rect } from './types';
 import { setupIpcHandlers } from './ipc';
 import { startTcpServer } from './coment-source/tcpServer';
@@ -28,7 +28,7 @@ function onAppReady() {
     const windows = rects.map(r => createWindow(r));
 
     if (process.platform !== 'darwin') {
-        setupTray(iconPath);
+        setupMenu(iconPath);
     }
 
     const commentSender = setupIpcHandlers(windows, isSingleWindow, displays.length);

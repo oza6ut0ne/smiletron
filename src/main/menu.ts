@@ -1,11 +1,15 @@
 import { app, BrowserWindow, Menu, MenuItem, Tray } from 'electron';
+import { aliveOrNull } from '../common/util';
 import { config, toggleStatusWithAuto } from './config';
+import { togglePause } from './ipc';
 
 export let tray: Tray | null = null;
-let contextMenu: Menu | null = null;
+let trayMenu: Menu | null = null;
 
 
-export function setupTray(iconPath: string) {
+export function setupMenu(iconPath: string) {
+    const windows = BrowserWindow.getAllWindows();
+
     tray = new Tray(iconPath);
     tray.setToolTip(app.name);
     tray.addListener('click', () => {
@@ -15,9 +19,17 @@ export function setupTray(iconPath: string) {
             windows.forEach(w => aliveOrNull(w)?.minimize());
         }
     });
+    trayMenu = createTrayMenu(windows);
+    tray.setContextMenu(trayMenu);
 
-    const windows = BrowserWindow.getAllWindows();
-    contextMenu = Menu.buildFromTemplate([
+    const defaultAppMenu = Menu.getApplicationMenu();
+    const appMenu = defaultAppMenu ? defaultAppMenu : new Menu();
+    appMenu.append(new MenuItem({ label: app.getName(), submenu: trayMenu }));
+    Menu.setApplicationMenu(appMenu);
+}
+
+function createTrayMenu(windows: BrowserWindow[]): Menu {
+    const contextMenu = Menu.buildFromTemplate([
         { label: 'Restore', click: () => {
             windows.forEach(w => aliveOrNull(w)?.show());
         }},
@@ -52,17 +64,18 @@ export function setupTray(iconPath: string) {
         app.quit();
     }}));
     contextMenu.append(new MenuItem({ role: 'quit' }));
-    tray.setContextMenu(contextMenu);
+
+    return contextMenu;
 }
 
 function addDebugMenu(contextMenu: Menu, windows: BrowserWindow[]) {
     const perWindowMenuItems = (
-        windows.map((w, i) => constructPerWindowsDebugMenuItem(w, i))
+        windows.map((w, i) => createPerWindowsDebugMenuItem(w, i))
     );
 
-    const togglePauseMenuItem = new MenuItem(({ label: 'Pause / Unpause', click: () =>
-        windows.forEach(w => aliveOrNull(w)?.webContents.send('toggle-pause'))
-    }));
+    const togglePauseMenuItem = new MenuItem(
+        { label: 'Pause / Unpause', accelerator: 'Space', click: togglePause }
+    );
 
     const devToolsMenuItem = new MenuItem({ label: 'DevTools',
         submenu: [
@@ -80,12 +93,12 @@ function addDebugMenu(contextMenu: Menu, windows: BrowserWindow[]) {
             { label: 'enable', click: () => windows.forEach((w, i) => {
                 aliveOrNull(w)?.setIgnoreMouseEvents(false);
                 putCheckOnItem(contextMenu.getMenuItemById(`MouseEvents ${i} enabled`), true);
-                refreshContextMenu();
+                refreshTrayMenu();
             })},
             { label: 'disable', click: () => windows.forEach((w, i) => {
                 aliveOrNull(w)?.setIgnoreMouseEvents(true);
                 putCheckOnItem(contextMenu.getMenuItemById(`MouseEvents ${i} disabled`), true);
-                refreshContextMenu();
+                refreshTrayMenu();
             })},
         ]},
     );
@@ -95,12 +108,12 @@ function addDebugMenu(contextMenu: Menu, windows: BrowserWindow[]) {
             { label: 'enable', click: () => windows.forEach((w, i) => {
                 aliveOrNull(w)?.setSkipTaskbar(false);
                 putCheckOnItem(contextMenu.getMenuItemById(`Taskbar ${i} enabled`), true);
-                refreshContextMenu();
+                refreshTrayMenu();
             })},
             { label: 'disable', click: () => windows.forEach((w, i) => {
                 aliveOrNull(w)?.setSkipTaskbar(true);
                 putCheckOnItem(contextMenu.getMenuItemById(`Taskbar ${i} disabled`), true);
-                refreshContextMenu();
+                refreshTrayMenu();
             })},
         ]},
     );
@@ -118,7 +131,7 @@ function addDebugMenu(contextMenu: Menu, windows: BrowserWindow[]) {
     contextMenu.append(debugMenu);
 }
 
-function constructPerWindowsDebugMenuItem(window: BrowserWindow, index: number): MenuItem {
+function createPerWindowsDebugMenuItem(window: BrowserWindow, index: number): MenuItem {
     return new MenuItem({ label: `Window ${index}`, submenu: [
         { label: `Toggle DevTools`, click: () => aliveOrNull(window)?.webContents.toggleDevTools() },
         { label: 'MouseEvents', submenu: [
@@ -144,9 +157,9 @@ function constructPerWindowsDebugMenuItem(window: BrowserWindow, index: number):
     ]});
 }
 
-function refreshContextMenu() {
-    if (contextMenu !== null) {
-        tray?.setContextMenu(contextMenu);
+function refreshTrayMenu() {
+    if (trayMenu !== null) {
+        tray?.setContextMenu(trayMenu);
     }
 }
 
@@ -154,8 +167,4 @@ function putCheckOnItem(item: MenuItem | null, isChecked: boolean) {
     if (item !== null) {
         item.checked = isChecked;
     }
-}
-
-function aliveOrNull(window: BrowserWindow): BrowserWindow | null {
-    return window.isDestroyed() ? null : window;
 }

@@ -1,3 +1,5 @@
+import { BrowserWindow } from "electron";
+
 const getVarNamePattern = new RegExp("(.*?);? *}?$");
 
 
@@ -14,4 +16,8 @@ export function noTruncSplit(s: string, sep: string, limit: number) {
     const parts = s.split(sep, limit);
     parts.push(s.slice(parts.join('').length + (sep.length * limit)));
     return parts;
+}
+
+export function aliveOrNull(window: BrowserWindow): BrowserWindow | null {
+    return window.isDestroyed() ? null : window;
 }
