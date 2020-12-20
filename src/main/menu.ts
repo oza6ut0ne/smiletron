@@ -3,9 +3,10 @@ import { aliveOrNull } from '../common/util';
 import { config, toggleStatusWithAuto } from './config';
 import { togglePause } from './ipc';
 
+const isWindows = process.platform === 'win32';
 const isMac = process.platform === 'darwin';
 const isAppImage = process.platform === 'linux' && app.isPackaged && app.getPath('exe').startsWith('/tmp/.mount_');
-const isExe = process.platform === 'win32' && app.isPackaged;
+const isExe = isWindows && app.isPackaged;
 const relaunchExecPath = isExe ? process.env.PORTABLE_EXECUTABLE_FILE : undefined;
 
 export let tray: Tray | null = null;
@@ -20,8 +21,8 @@ export function setupMenu(iconPath: string) {
         tray = new Tray(iconPath);
         tray.setToolTip(app.name);
         tray.addListener('click', () => {
-            if (windows.every(w => aliveOrNull(w)?.isMinimized())) {
-                windows.forEach(w => aliveOrNull(w)?.show());
+            if (windows.filter(w => !w.isDestroyed()).every(w => w.isMinimized())) {
+                windows.forEach(w => restoreWindow(w));
             } else {
                 windows.forEach(w => aliveOrNull(w)?.minimize());
             }
@@ -38,7 +39,7 @@ export function setupMenu(iconPath: string) {
 function createTrayMenu(windows: BrowserWindow[]): Menu {
     const contextMenu = Menu.buildFromTemplate([
         { label: 'Restore', click: () => {
-            windows.forEach(w => aliveOrNull(w)?.show());
+            windows.forEach(w => restoreWindow(w));
         }},
         { label: 'Minimize', click: () => {
             windows.forEach(w => aliveOrNull(w)?.minimize());
@@ -46,7 +47,7 @@ function createTrayMenu(windows: BrowserWindow[]): Menu {
         { label: 'Windows', visible: (windows.length > 1),
           submenu: windows.map((w, i) => {
               return { label: `Window ${i}`, submenu: [
-                  { label: 'Restore', click: () => aliveOrNull(w)?.show() },
+                  { label: 'Restore', click: () => restoreWindow(w) },
                   { label: 'Minimize', click: () => aliveOrNull(w)?.minimize() }
               ]};
         })},
@@ -175,5 +176,17 @@ function refreshTrayMenu() {
 function putCheckOnItem(item: MenuItem | null, isChecked: boolean) {
     if (item !== null) {
         item.checked = isChecked;
+    }
+}
+
+function restoreWindow(window: BrowserWindow | null) {
+    if ((window === null) || window.isDestroyed()) {
+        return;
+    }
+
+    if (isWindows) {
+        window.restore();
+    } else {
+        window.show();
     }
 }
