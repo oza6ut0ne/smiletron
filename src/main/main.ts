@@ -33,10 +33,7 @@ function onAppReady() {
     const isSingleWindow = isSingleWindowForced || (!isMultiWindowForced && isDisplaySizesEqual(displays));
     const rects = calcWindowRects(displays, isSingleWindow);
     const windows = rects.map(r => createWindow(r));
-
-    if (process.platform !== 'darwin') {
-        setupMenu(iconPath);
-    }
+    setupMenu(iconPath);
 
     const commentSender = setupIpcHandlers(windows, isSingleWindow, displays.length);
     startTcpServer(commentSender, args.p, args.b);

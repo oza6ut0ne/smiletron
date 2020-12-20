@@ -3,6 +3,7 @@ import { aliveOrNull } from '../common/util';
 import { config, toggleStatusWithAuto } from './config';
 import { togglePause } from './ipc';
 
+const isMac = process.platform === 'darwin';
 const isAppImage = process.platform === 'linux' && app.isPackaged && app.getPath('exe').startsWith('/tmp/.mount_');
 const isExe = process.platform === 'win32' && app.isPackaged;
 const relaunchExecPath = isExe ? process.env.PORTABLE_EXECUTABLE_FILE : undefined;
@@ -13,18 +14,20 @@ let trayMenu: Menu | null = null;
 
 export function setupMenu(iconPath: string) {
     const windows = BrowserWindow.getAllWindows();
-
-    tray = new Tray(iconPath);
-    tray.setToolTip(app.name);
-    tray.addListener('click', () => {
-        if (windows.every(w => aliveOrNull(w)?.isMinimized())) {
-            windows.forEach(w => aliveOrNull(w)?.show());
-        } else {
-            windows.forEach(w => aliveOrNull(w)?.minimize());
-        }
-    });
     trayMenu = createTrayMenu(windows);
-    tray.setContextMenu(trayMenu);
+
+    if (!isMac) {
+        tray = new Tray(iconPath);
+        tray.setToolTip(app.name);
+        tray.addListener('click', () => {
+            if (windows.every(w => aliveOrNull(w)?.isMinimized())) {
+                windows.forEach(w => aliveOrNull(w)?.show());
+            } else {
+                windows.forEach(w => aliveOrNull(w)?.minimize());
+            }
+        });
+        tray.setContextMenu(trayMenu);
+    }
 
     const defaultAppMenu = Menu.getApplicationMenu();
     const appMenu = defaultAppMenu ? defaultAppMenu : new Menu();
@@ -164,7 +167,7 @@ function createPerWindowsDebugMenuItem(window: BrowserWindow, index: number): Me
 }
 
 function refreshTrayMenu() {
-    if (trayMenu !== null) {
+    if (!isMac && (trayMenu !== null)) {
         tray?.setContextMenu(trayMenu);
     }
 }
