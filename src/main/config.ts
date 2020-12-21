@@ -27,6 +27,10 @@ class Config {
         this.store = new ElectronStore<ConfigSchema>({ defaults: this.defaultValues });
     }
 
+    clear() {
+        this.store.clear();
+    }
+
     get listenPort(): number {
         return this.store.get(getVarName(() => this.defaultValues.listenPort));
     }

@@ -16,9 +16,16 @@ const args = yargs(process.argv.slice(1)).options({
     p: { type: 'number', alias: 'port', default: config.listenPort,
          description: 'Listen port. Set -1 to disable.' },
     b: { type: 'string', alias: 'bind', default: config.bindAddress,
-         description: 'Bind address.' }
+         description: 'Bind address.' },
+    c: { type: 'boolean', alias: 'clear-config',
+         description: 'Clear config and exit.' }
 }).argv;
 
+
+if (args.c) {
+    config.clear();
+    app.quit();
+}
 
 app.disableHardwareAcceleration();
 app.commandLine.appendSwitch('disable-gpu');
