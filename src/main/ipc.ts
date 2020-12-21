@@ -1,6 +1,9 @@
 import { BrowserWindow, ipcMain, IpcMainEvent } from 'electron';
 import { Comment, RendererInfo } from '../common/types';
 import { aliveOrNull } from '../common/util';
+import { config } from './config';
+
+let durationPerDisplayMsec = config.duration;
 
 
 export interface ICommentSender {
@@ -52,9 +55,33 @@ class CommentSender implements ICommentSender {
 }
 
 export function setupIpcHandlers(windows: BrowserWindow[], isSingleWindow: boolean, numDisplays: number): ICommentSender {
+    ipcMain.handle('request-duration', () => durationPerDisplayMsec);
     return CommentSender.create(windows, isSingleWindow, numDisplays);
 }
 
 export function togglePause() {
     BrowserWindow.getAllWindows().forEach(w => aliveOrNull(w)?.webContents.send('toggle-pause'));
+}
+
+export function resetDuration() {
+    config.resetDuration();
+    updateDuration(config.duration);
+}
+
+export function addDuration(duration: number) {
+    const newDuration = durationPerDisplayMsec + duration;
+    if (newDuration <= 0) {
+        return;
+    }
+
+    updateDuration(newDuration);
+}
+
+function updateDuration(duration: number) {
+    durationPerDisplayMsec = duration;
+    config.duration = duration;
+
+    BrowserWindow.getAllWindows().forEach(w => {
+        aliveOrNull(w)?.webContents.send('update-duration', durationPerDisplayMsec);
+    });
 }

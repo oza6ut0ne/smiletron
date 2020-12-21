@@ -3,13 +3,15 @@ import { noTruncSplit } from '../../common/util';
 import './window';
 
 const SEPARATOR = '##SEP##';
-const DURATION_PER_DISPLAY_MSEC = 5000;
 const FLASHING_DECAY_TIME_MSEC = 1000;
 
+let durationPerDisplayMsec = 0;
 let isPause = false;
 
 
 document.addEventListener('DOMContentLoaded', () => {
+    window.electron.requestDuration((duration) => durationPerDisplayMsec = duration);
+
     for (const eventType of ['focus', 'resize']) {
         window.addEventListener(eventType, () => flashWindow());
     }
@@ -104,17 +106,18 @@ async function handleComment(comment: Comment, rendererInfo: RendererInfo) {
     const durationRatio = 1 / (1 + commentDiv.offsetWidth * wideWindowFactor / window.innerWidth);
 
     animateToLeft(commentDiv, window.innerWidth, 0,
-                  DURATION_PER_DISPLAY_MSEC * wideWindowFactor * durationRatio)
+                  durationPerDisplayMsec * wideWindowFactor * durationRatio)
     .then(() => {
         window.electron.notifyCommentArrivedToLeftEdge(comment, rendererInfo.windowIndex);
         return animateToLeft(commentDiv, 0, -commentDiv.offsetWidth * wideWindowFactor,
-                             DURATION_PER_DISPLAY_MSEC * wideWindowFactor * (1 - durationRatio));
+                             durationPerDisplayMsec * wideWindowFactor * (1 - durationRatio));
     }).then(() => {
         document.body.removeChild(commentDiv);
     });
 }
 
 window.electron.onCommentReceived(handleComment);
+window.electron.onDurationUpdated((duration) => durationPerDisplayMsec = duration);
 window.electron.onTogglePause(() => {
     if (isPause) {
         isPause = false;

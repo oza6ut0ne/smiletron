@@ -1,7 +1,7 @@
 import { app, BrowserWindow, Menu, MenuItem, Tray } from 'electron';
 import { aliveOrNull } from '../common/util';
 import { config, toggleStatusWithAuto } from './config';
-import { togglePause } from './ipc';
+import { addDuration, resetDuration, togglePause } from './ipc';
 
 const isWindows = process.platform === 'win32';
 const isMac = process.platform === 'darwin';
@@ -52,6 +52,11 @@ function createTrayMenu(windows: BrowserWindow[]): Menu {
               ]};
         })},
         { label: 'Config', submenu: [
+            { label: 'Speed', submenu: [
+                { label: 'up', accelerator: 'Plus', click: () => addDuration(-config.deltaDuration) },
+                { label: 'down', accelerator: '-', click: () => addDuration(config.deltaDuration) },
+                { label: 'reset', click: () => resetDuration() }
+            ]},
             { label: 'Multi Window', submenu: toggleStatusWithAuto.map(v => {
                 return { label: v, checked: config.useMultiWindow === v,
                          type: 'radio', click: () => {
