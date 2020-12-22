@@ -17,7 +17,3 @@ export function noTruncSplit(s: string, sep: string, limit: number) {
     parts.push(s.slice(parts.join('').length + (sep.length * limit)));
     return parts;
 }
-
-export function aliveOrNull(window: BrowserWindow): BrowserWindow | null {
-    return window.isDestroyed() ? null : window;
-}

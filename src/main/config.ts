@@ -11,6 +11,7 @@ interface ConfigSchema {
     duration: number;
     deltaDuration: number;
     useMultiWindow: ToggleStatusWithAuto;
+    globalRestoreAccelerator: string;
 }
 
 class Config {
@@ -20,7 +21,8 @@ class Config {
         bindAddress: '::',
         duration: 5000,
         deltaDuration: 1000,
-        useMultiWindow: 'auto'
+        useMultiWindow: 'auto',
+        globalRestoreAccelerator: 'CmdOrCtrl+Shift+Space'
     };
 
     constructor() {
@@ -73,6 +75,14 @@ class Config {
 
     set useMultiWindow(value: ToggleStatusWithAuto) {
         this.store.set(getVarName(() => this.defaultValues.useMultiWindow), value);
+    }
+
+    get globalRestoreAccelerator(): string {
+        return this.store.get(getVarName(() => this.defaultValues.globalRestoreAccelerator));
+    }
+
+    set globalRestoreAccelerator(value: string) {
+        this.store.set(getVarName(() => this.defaultValues.globalRestoreAccelerator), value);
     }
 }
 

@@ -1,6 +1,6 @@
 import { BrowserWindow, ipcMain, IpcMainEvent } from 'electron';
 import { Comment, RendererInfo } from '../common/types';
-import { aliveOrNull } from '../common/util';
+import { aliveOrNull } from './util';
 import { config } from './config';
 
 let durationPerDisplayMsec = config.duration;

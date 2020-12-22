@@ -1,12 +1,8 @@
-import { app, BrowserWindow, Menu, MenuItem, Tray } from 'electron';
-import { aliveOrNull } from '../common/util';
+import { app, BrowserWindow, globalShortcut, Menu, MenuItem, Tray } from 'electron';
 import { config, toggleStatusWithAuto } from './config';
 import { addDuration, resetDuration, togglePause } from './ipc';
+import { isExe, isMac, isAppImage, restoreWindow, aliveOrNull } from './util';
 
-const isWindows = process.platform === 'win32';
-const isMac = process.platform === 'darwin';
-const isAppImage = process.platform === 'linux' && app.isPackaged && app.getPath('exe').startsWith('/tmp/.mount_');
-const isExe = isWindows && app.isPackaged;
 const relaunchExecPath = isExe ? process.env.PORTABLE_EXECUTABLE_FILE : undefined;
 
 export let tray: Tray | null = null;
@@ -34,6 +30,10 @@ export function setupMenu(iconPath: string) {
     const appMenu = defaultAppMenu ? defaultAppMenu : new Menu();
     appMenu.append(new MenuItem({ label: app.getName(), submenu: trayMenu }));
     Menu.setApplicationMenu(appMenu);
+
+    if (config.globalRestoreAccelerator) {
+        globalShortcut.register(config.globalRestoreAccelerator, () => windows.forEach(w => restoreWindow(w)));
+    }
 }
 
 function createTrayMenu(windows: BrowserWindow[]): Menu {
@@ -181,17 +181,5 @@ function refreshTrayMenu() {
 function putCheckOnItem(item: MenuItem | null, isChecked: boolean) {
     if (item !== null) {
         item.checked = isChecked;
-    }
-}
-
-function restoreWindow(window: BrowserWindow | null) {
-    if ((window === null) || window.isDestroyed()) {
-        return;
-    }
-
-    if (isWindows) {
-        window.restore();
-    } else {
-        window.show();
     }
 }
