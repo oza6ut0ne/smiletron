@@ -1,5 +1,3 @@
-import { BrowserWindow } from "electron";
-
 const getVarNamePattern = new RegExp("(.*?);? *}?$");
 
 
