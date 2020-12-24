@@ -10,22 +10,23 @@ let isPause = false;
 
 
 document.addEventListener('DOMContentLoaded', () => {
+    window.electron.requestDefaultDuration(setupIpcHandlers);
     window.electron.requestDuration((duration) => durationPerDisplayMsec = duration);
 
     for (const eventType of ['focus', 'resize']) {
-        window.addEventListener(eventType, () => flashWindow());
+        window.addEventListener(eventType, () => flashWindow(0, 255, 0, 0.3));
     }
-    flashWindow().onfinish = flashWindow;
+    flashWindow(0, 255, 0, 0.3).onfinish = () => flashWindow(0, 255, 0, 0.3);
 });
 
-function flashWindow(): Animation {
+function flashWindow(r: number, g: number, b: number, a: number, decayFactor: number = 1): Animation {
     const effect = [
-        { background: 'rgb(0, 255, 0, 0.3)' },
+        { background: `rgb(${r}, ${g}, ${b}, ${a})` },
         { background: 'rgb(0, 0, 0, 0)' }
     ];
 
     const timing = {
-        duration: FLASHING_DECAY_TIME_MSEC,
+        duration: FLASHING_DECAY_TIME_MSEC * decayFactor,
         iterations: 1,
         easing: 'linear'
     };
@@ -116,14 +117,37 @@ async function handleComment(comment: Comment, rendererInfo: RendererInfo) {
     });
 }
 
-window.electron.onCommentReceived(handleComment);
-window.electron.onDurationUpdated((duration) => durationPerDisplayMsec = duration);
-window.electron.onTogglePause(() => {
-    if (isPause) {
-        isPause = false;
-        document.getAnimations().forEach(a => a.play());
-    } else {
-        isPause = true;
-        document.getAnimations().forEach(a => a.pause());
-    }
-});
+function getCommentAnimations(): Animation[] {
+    return document.getAnimations().filter(a => {
+        // @ts-ignore
+        return a.effect?.target.className === 'comment';
+    });
+}
+
+function setupIpcHandlers(defaultDuration: number) {
+    window.electron.onCommentReceived(handleComment);
+    window.electron.onDurationUpdated((duration) => {
+        if (duration === defaultDuration) {
+            flashWindow(255, 0, 255, 0.2, 0.75);
+        } else if (duration < durationPerDisplayMsec) {
+            flashWindow(255, 0, 0, 0.15, 0.75);
+        } else if (duration > durationPerDisplayMsec) {
+            flashWindow(0, 0, 255, 0.15, 0.75);
+        } else {
+            flashWindow(255, 255, 255, 0.15, 0.75);
+        }
+        durationPerDisplayMsec = duration;
+    });
+
+    window.electron.onTogglePause(() => {
+        if (isPause) {
+            isPause = false;
+            getCommentAnimations().forEach(a => a.play());
+            flashWindow(255, 255, 0, 0.15, 0.75);
+        } else {
+            isPause = true;
+            getCommentAnimations().forEach(a => a.pause());
+            flashWindow(0, 255, 255, 0.15, 0.75);
+        }
+    });
+}

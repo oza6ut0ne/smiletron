@@ -55,7 +55,7 @@ function createTrayMenu(windows: BrowserWindow[]): Menu {
             { label: 'Speed', submenu: [
                 { label: 'up', accelerator: 'Plus', click: () => addDuration(-config.deltaDuration) },
                 { label: 'down', accelerator: '-', click: () => addDuration(config.deltaDuration) },
-                { label: 'reset', click: () => resetDuration() }
+                { label: 'reset', accelerator: 'Shift+0', click: () => resetDuration() }
             ]},
             { label: 'Multi Window', submenu: toggleStatusWithAuto.map(v => {
                 return { label: v, checked: config.useMultiWindow === v,

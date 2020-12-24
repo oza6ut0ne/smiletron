@@ -56,6 +56,7 @@ class CommentSender implements ICommentSender {
 
 export function setupIpcHandlers(windows: BrowserWindow[], isSingleWindow: boolean, numDisplays: number): ICommentSender {
     ipcMain.handle('request-duration', () => durationPerDisplayMsec);
+    ipcMain.handle('request-default-duration', () => config.getDefaultDuration());
     return CommentSender.create(windows, isSingleWindow, numDisplays);
 }
 
@@ -71,9 +72,9 @@ export function resetDuration() {
 export function addDuration(duration: number) {
     const newDuration = durationPerDisplayMsec + duration;
     if (newDuration <= 0) {
+        updateDuration(durationPerDisplayMsec);
         return;
     }
-
     updateDuration(newDuration);
 }
 

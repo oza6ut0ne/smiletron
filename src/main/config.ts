@@ -6,12 +6,12 @@ type ToggleStatusWithAuto = typeof toggleStatusWithAuto[number];
 
 
 interface ConfigSchema {
-    listenPort: number;
-    bindAddress: string;
-    duration: number;
-    deltaDuration: number;
-    useMultiWindow: ToggleStatusWithAuto;
-    globalRestoreAccelerator: string;
+    readonly listenPort: number;
+    readonly bindAddress: string;
+    readonly duration: number;
+    readonly deltaDuration: number;
+    readonly useMultiWindow: ToggleStatusWithAuto;
+    readonly globalRestoreAccelerator: string;
 }
 
 class Config {
@@ -55,6 +55,10 @@ class Config {
 
     set duration(value: number) {
         this.store.set(getVarName(() => this.defaultValues.duration), value);
+    }
+
+    getDefaultDuration() {
+        return this.defaultValues.duration;
     }
 
     resetDuration() {
