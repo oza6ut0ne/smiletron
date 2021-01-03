@@ -30,6 +30,7 @@ if (args.c) {
 
 app.disableHardwareAcceleration();
 app.commandLine.appendSwitch('disable-gpu');
+app.commandLine.appendSwitch('disable-frame-rate-limit');
 app.whenReady().then(() => setTimeout(onAppReady, 2000));
 app.on('window-all-closed', app.quit);
 
