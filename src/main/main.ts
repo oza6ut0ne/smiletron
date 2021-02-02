@@ -3,7 +3,7 @@ import yargs from 'yargs';
 import { app, BrowserWindow, Display, Rectangle } from 'electron';
 import { screen as electronScreen } from 'electron';
 
-import { startTcpServer } from './coment-source/tcpServer';
+import { startTcpServer } from './comment-source/tcpServer';
 import { config } from './config';
 import { setupIpcHandlers } from './ipc';
 import { setupMenu, tray } from './menu';
