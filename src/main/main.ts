@@ -8,7 +8,7 @@ import { config } from './config';
 import { setupIpcHandlers } from './ipc';
 import { setupMenu, tray } from './menu';
 import { Rect } from './types';
-import { isLinux } from './util';
+import { isMac } from './util';
 
 const mainUrl = `file://${__dirname}/html/index.html`;
 const assetsPath = app.isPackaged ? path.join(process.resourcesPath, 'assets') : 'src/assets';
@@ -93,17 +93,17 @@ function createWindow(rect: Rectangle): BrowserWindow {
 
 function calcWindowRects(displays: Display[], isSingleWindow: boolean): Rect[] {
     if (!isSingleWindow) {
-        if (isLinux) {
-            return displays.sort((a, b) => b.workArea.x - a.workArea.x).map(d => d.workArea);
-        } else {
+        if (isMac) {
             return displays.sort((a, b) => b.bounds.x - a.bounds.x).map(d => d.bounds);
+        } else {
+            return displays.sort((a, b) => b.workArea.x - a.workArea.x).map(d => d.workArea);
         }
     }
 
     var width = 0;
     var minHeight = Infinity;
     displays.forEach(d => {
-        let bounds = isLinux ? d.workArea : d.bounds;
+        let bounds = isMac ? d.bounds : d.workArea;
         width += bounds.width;
         minHeight = minHeight < bounds.height ? minHeight : bounds.height;
     });
