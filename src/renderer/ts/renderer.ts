@@ -82,7 +82,7 @@ function addComment(comment: Comment): Promise<HTMLDivElement> {
 }
 
 function animateToLeft(div: HTMLDivElement, start: number, end: number, duration: number): Promise<Animation> {
-    const efect = [
+    const effect = [
         { left: start + 'px' },
         { left: end + 'px' }
     ];
@@ -93,7 +93,7 @@ function animateToLeft(div: HTMLDivElement, start: number, end: number, duration
         easing: 'linear'
     };
 
-    const animation = div.animate(efect, timing);
+    const animation = div.animate(effect, timing);
     if (isPause) {
         animation.pause();
     }
