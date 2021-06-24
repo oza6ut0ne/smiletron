@@ -97,14 +97,14 @@ function calcWindowRects(displays: Display[], isSingleWindow: boolean): Rect[] {
         return rects.sort((a, b) => b.y - a.y || b.x - a.x);
     }
 
-    var width = 0;
-    var minHeight = Infinity;
-    displays.forEach(d => {
-        let bounds = isMac ? d.bounds : d.workArea;
-        width += bounds.width;
-        minHeight = minHeight < bounds.height ? minHeight : bounds.height;
+    let maxWidth = 0;
+    let minHeight = Infinity;
+    rects.filter(r => r.y === Math.min(...rects.map(r => r.y))).forEach(r => {
+        let endX = r.x + r.width;
+        maxWidth = maxWidth < endX ? endX : maxWidth;
+        minHeight = minHeight < r.height ? minHeight : r.height;
     });
-    return [{x: 0, y:0, width: width, height: minHeight}];
+    return [{x: 0, y:0, width: maxWidth, height: minHeight}];
 }
 
 function isDisplaySizesEqual(displays: Display[]) {
