@@ -92,12 +92,9 @@ function createWindow(rect: Rectangle): BrowserWindow {
 }
 
 function calcWindowRects(displays: Display[], isSingleWindow: boolean): Rect[] {
+    const rects = isMac ? displays.map(d => d.bounds) : displays.map(d => d.workArea);
     if (!isSingleWindow) {
-        if (isMac) {
-            return displays.sort((a, b) => b.bounds.x - a.bounds.x).map(d => d.bounds);
-        } else {
-            return displays.sort((a, b) => b.workArea.x - a.workArea.x).map(d => d.workArea);
-        }
+        return rects.sort((a, b) => b.y - a.y || b.x - a.x);
     }
 
     var width = 0;
