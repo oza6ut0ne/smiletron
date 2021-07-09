@@ -6,12 +6,14 @@ const SEPARATOR = '##SEP##';
 const FLASHING_DECAY_TIME_MSEC = 1000;
 
 let durationPerDisplayMsec = 0;
+let iconEnabled = true;
 let isPause = false;
 
 
 document.addEventListener('DOMContentLoaded', () => {
     window.electron.requestDefaultDuration(setupIpcHandlers);
     window.electron.requestDuration((duration) => durationPerDisplayMsec = duration);
+    window.electron.requestIconEnabled((isEnabled) => iconEnabled = isEnabled);
 
     for (const eventType of ['focus', 'resize']) {
         window.addEventListener(eventType, () => flashWindow(0, 255, 0, 0.3));
@@ -45,6 +47,9 @@ function addComment(comment: Comment): Promise<HTMLDivElement> {
     let imgSrc = '';
     if (text.indexOf(SEPARATOR) !== -1) {
         [imgSrc, text] = noTruncSplit(text, SEPARATOR, 1);
+        if (!iconEnabled) {
+            imgSrc = '';
+        }
     }
 
     const span = document.createElement('span');
@@ -149,5 +154,9 @@ function setupIpcHandlers(defaultDuration: number) {
             getCommentAnimations().forEach(a => a.pause());
             flashWindow(0, 255, 255, 0.15, 0.75);
         }
+    });
+
+    window.electron.onUpdateIconEnabled((isEnabled) => {
+        iconEnabled = isEnabled;
     });
 }

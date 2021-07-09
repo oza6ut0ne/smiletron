@@ -16,17 +16,25 @@ contextBridge.exposeInMainWorld(
             ipcRenderer.invoke('request-default-duration').then((result) => callback(result));
         },
 
+        requestIconEnabled: (callback: (isEnabled: boolean) => void) => {
+            ipcRenderer.invoke('request-icon-enabled').then((result) => callback(result));
+        },
+
         onCommentReceived: (callback: (comment: Comment, rendererInfo: RendererInfo) => void) => {
             ipcRenderer.on(
                 'comment', (event: IpcRendererEvent, comment, rendererInfo) => callback(comment, rendererInfo));
+        },
+
+        onTogglePause: (callback: () => void) => {
+            ipcRenderer.on('toggle-pause', () => callback());
         },
 
         onDurationUpdated: (callback: (duration: number) => void) => {
             ipcRenderer.on('update-duration', (event: IpcRendererEvent, duration) => callback(duration));
         },
 
-        onTogglePause: (callback: () => void) => {
-            ipcRenderer.on('toggle-pause', () => callback());
-        }
+        onUpdateIconEnabled: (callback: (isEnabled: boolean) => void) => {
+            ipcRenderer.on('update-icon-enabled', (event: IpcRendererEvent, isEnabled) => callback(isEnabled));
+        },
     },
 );

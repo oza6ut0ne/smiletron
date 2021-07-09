@@ -57,6 +57,7 @@ class CommentSender implements ICommentSender {
 export function setupIpcHandlers(windows: BrowserWindow[], isSingleWindow: boolean, numDisplays: number): ICommentSender {
     ipcMain.handle('request-duration', () => durationPerDisplayMsec);
     ipcMain.handle('request-default-duration', () => config.getDefaultDuration());
+    ipcMain.handle('request-icon-enabled', () => config.iconEnabled);
     return CommentSender.create(windows, isSingleWindow, numDisplays);
 }
 
@@ -84,5 +85,12 @@ function updateDuration(duration: number) {
 
     BrowserWindow.getAllWindows().forEach(w => {
         aliveOrNull(w)?.webContents.send('update-duration', durationPerDisplayMsec);
+    });
+}
+
+export function updateIconEnabled(isEnabled: boolean) {
+    config.iconEnabled = isEnabled;
+    BrowserWindow.getAllWindows().forEach(w => {
+        aliveOrNull(w)?.webContents.send('update-icon-enabled', isEnabled);
     });
 }

@@ -10,6 +10,7 @@ interface ConfigSchema {
     readonly bindAddress: string;
     readonly duration: number;
     readonly deltaDuration: number;
+    readonly iconEnabled: boolean;
     readonly useMultiWindow: ToggleStatusWithAuto;
     readonly globalRestoreAccelerator: string;
 }
@@ -21,6 +22,7 @@ class Config {
         bindAddress: '::',
         duration: 5000,
         deltaDuration: 1000,
+        iconEnabled: true,
         useMultiWindow: 'auto',
         globalRestoreAccelerator: 'CmdOrCtrl+Shift+Space'
     };
@@ -71,6 +73,14 @@ class Config {
 
     set deltaDuration(value: number) {
         this.store.set(getVarName(() => this.defaultValues.deltaDuration), value);
+    }
+
+    get iconEnabled(): boolean {
+        return this.store.get(getVarName(() => this.defaultValues.iconEnabled));
+    }
+
+    set iconEnabled(value: boolean) {
+        this.store.set(getVarName(() => this.defaultValues.iconEnabled), value);
     }
 
     get useMultiWindow(): ToggleStatusWithAuto {
