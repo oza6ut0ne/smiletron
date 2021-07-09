@@ -58,6 +58,7 @@ export function setupIpcHandlers(windows: BrowserWindow[], isSingleWindow: boole
     ipcMain.handle('request-duration', () => durationPerDisplayMsec);
     ipcMain.handle('request-default-duration', () => config.getDefaultDuration());
     ipcMain.handle('request-icon-enabled', () => config.iconEnabled);
+    ipcMain.handle('request-img-enabled', () => config.imgEnabled);
     return CommentSender.create(windows, isSingleWindow, numDisplays);
 }
 
@@ -92,5 +93,12 @@ export function updateIconEnabled(isEnabled: boolean) {
     config.iconEnabled = isEnabled;
     BrowserWindow.getAllWindows().forEach(w => {
         aliveOrNull(w)?.webContents.send('update-icon-enabled', isEnabled);
+    });
+}
+
+export function updateImgEnabled(isEnabled: boolean) {
+    config.imgEnabled = isEnabled;
+    BrowserWindow.getAllWindows().forEach(w => {
+        aliveOrNull(w)?.webContents.send('update-img-enabled', isEnabled);
     });
 }

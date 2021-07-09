@@ -11,6 +11,7 @@ interface ConfigSchema {
     readonly duration: number;
     readonly deltaDuration: number;
     readonly iconEnabled: boolean;
+    readonly imgEnabled: boolean;
     readonly useMultiWindow: ToggleStatusWithAuto;
     readonly globalRestoreAccelerator: string;
 }
@@ -23,6 +24,7 @@ class Config {
         duration: 5000,
         deltaDuration: 1000,
         iconEnabled: true,
+        imgEnabled: false,
         useMultiWindow: 'auto',
         globalRestoreAccelerator: 'CmdOrCtrl+Shift+Space'
     };
@@ -81,6 +83,14 @@ class Config {
 
     set iconEnabled(value: boolean) {
         this.store.set(getVarName(() => this.defaultValues.iconEnabled), value);
+    }
+
+    get imgEnabled(): boolean {
+        return this.store.get(getVarName(() => this.defaultValues.imgEnabled));
+    }
+
+    set imgEnabled(value: boolean) {
+        this.store.set(getVarName(() => this.defaultValues.imgEnabled), value);
     }
 
     get useMultiWindow(): ToggleStatusWithAuto {

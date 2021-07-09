@@ -2,11 +2,13 @@ import { Comment, RendererInfo } from '../../common/types';
 import { noTruncSplit } from '../../common/util';
 import './window';
 
-const SEPARATOR = '##SEP##';
+const ICON_SEPARATOR = '##ICON##';
+const IMG_SEPARATOR = '##IMG##';
 const FLASHING_DECAY_TIME_MSEC = 1000;
 
-let durationPerDisplayMsec = 0;
-let iconEnabled = true;
+let durationPerDisplayMsec: number;
+let iconEnabled: boolean;
+let imgEnabled: boolean;
 let isPause = false;
 
 
@@ -14,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.electron.requestDefaultDuration(setupIpcHandlers);
     window.electron.requestDuration((duration) => durationPerDisplayMsec = duration);
     window.electron.requestIconEnabled((isEnabled) => iconEnabled = isEnabled);
+    window.electron.requestImgEnabled((isEnabled) => imgEnabled = isEnabled);
 
     for (const eventType of ['focus', 'resize']) {
         window.addEventListener(eventType, () => flashWindow(0, 255, 0, 0.3));
@@ -44,18 +47,30 @@ function addComment(comment: Comment): Promise<HTMLDivElement> {
     commentDiv.style.top = Math.floor(window.innerHeight * comment.offsetTopRatio) + 'px';
 
     let text = comment.text;
-    let imgSrc = '';
-    if (text.indexOf(SEPARATOR) !== -1) {
-        [imgSrc, text] = noTruncSplit(text, SEPARATOR, 1);
+    let iconSrc = '';
+    if (text.indexOf(ICON_SEPARATOR) !== -1) {
+        [iconSrc, text] = noTruncSplit(text, ICON_SEPARATOR, 1);
         if (!iconEnabled) {
-            imgSrc = '';
+            iconSrc = '';
         }
     }
 
-    const span = document.createElement('span');
-    span.className = 'content';
-    span.textContent = text;
-    commentDiv.appendChild(span);
+    if (imgEnabled) {
+        text = text.replace(/[\r\n]+/g, '');
+    }
+
+    const height = calcHeight(text);
+    const imgPromises: Promise<void>[] = [];
+    imgPromises.push(addImage(commentDiv, iconSrc, height));
+
+    if (imgEnabled) {
+        text.split(IMG_SEPARATOR).forEach((t, i) => {
+            (i % 2 == 0) ? addSpan(commentDiv, t) : imgPromises.push(addImage(commentDiv, t, height));
+        });
+    } else {
+        const content = text.split(IMG_SEPARATOR).filter((_, i) => i % 2 == 0).join('');
+        addSpan(commentDiv, content);
+    }
     document.body.appendChild(commentDiv);
 
     const protrusionBottom = commentDiv.offsetTop + commentDiv.offsetHeight - window.innerHeight;
@@ -64,25 +79,52 @@ function addComment(comment: Comment): Promise<HTMLDivElement> {
         commentDiv.style.top = (newTop > 0 ? newTop : 0) + 'px';
     }
 
+    return Promise.allSettled(imgPromises).then(() => commentDiv);
+}
+
+function calcHeight(text: string): number {
+    const dummyDiv = document.createElement('div');
+    dummyDiv.className = 'comment';
+    dummyDiv.style.left = window.innerWidth + 'px';
+
+    const span = document.createElement('span');
+    span.className = 'content';
+    span.textContent = text === '' ? ' ' : text;
+    dummyDiv.appendChild(span);
+    document.body.appendChild(dummyDiv);
+
+    const height = span.offsetHeight;
+    document.body.removeChild(dummyDiv);
+    return height;
+}
+
+function addSpan(div: HTMLDivElement, text: string) {
+    const span = document.createElement('span');
+    span.className = 'content';
+    span.textContent = text;
+    div.appendChild(span);
+}
+
+function addImage(div: HTMLDivElement, imgSrc: string, height: number): Promise<void> {
     return new Promise((resolve) => {
         if (!imgSrc) {
-            resolve(commentDiv);
+            resolve();
             return;
         }
 
         const iconImg: HTMLImageElement = document.createElement('img');
         iconImg.onload = () => {
-            resolve(commentDiv)
+            resolve()
         };
         iconImg.onerror = () => {
             iconImg.remove();
-            resolve(commentDiv);
+            resolve();
         };
 
-        iconImg.className = 'icon';
-        iconImg.height = span.offsetHeight;
+        iconImg.className = 'image';
+        iconImg.height = height;
         iconImg.src = imgSrc;
-        commentDiv.prepend(iconImg);
+        div.appendChild(iconImg);
     });
 }
 
@@ -156,7 +198,6 @@ function setupIpcHandlers(defaultDuration: number) {
         }
     });
 
-    window.electron.onUpdateIconEnabled((isEnabled) => {
-        iconEnabled = isEnabled;
-    });
+    window.electron.onUpdateIconEnabled((isEnabled) => iconEnabled = isEnabled);
+    window.electron.onUpdateImgEnabled((isEnabled) => imgEnabled = isEnabled);
 }

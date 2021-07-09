@@ -13,21 +13,19 @@ body {
 .comment {
     position: fixed;
     display: grid;
+    column-gap: 10px;
     font-size: 36pt;
     white-space: pre;
     font-family: "Blobmoji", "YuGothic", "Hiragino Kaku Gothic ProN", "Meiryo", "verdana", sans-serif;
 }
 
-.icon {
+.image {
     grid-row: 1;
-    grid-column: 1;
     vertical-align: text-top;
-    margin-right: 10px;
 }
 
 .content {
     grid-row: 1;
-    grid-column: 2;
     color: #ffffff;
     font-weight: bold;
     -webkit-text-stroke-color: #000000;
