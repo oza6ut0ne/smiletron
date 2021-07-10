@@ -16,8 +16,16 @@ contextBridge.exposeInMainWorld(
             ipcRenderer.invoke('request-default-duration').then((result) => callback(result));
         },
 
+        requestNewlineEnabled: (callback: (isEnabled: boolean) => void) => {
+            ipcRenderer.invoke('request-newline-enabled').then((result) => callback(result));
+        },
+
         requestIconEnabled: (callback: (isEnabled: boolean) => void) => {
             ipcRenderer.invoke('request-icon-enabled').then((result) => callback(result));
+        },
+
+        requestInlineImgEnabled: (callback: (isEnabled: boolean) => void) => {
+            ipcRenderer.invoke('request-inline-img-enabled').then((result) => callback(result));
         },
 
         requestImgEnabled: (callback: (isEnabled: boolean) => void) => {
@@ -37,8 +45,16 @@ contextBridge.exposeInMainWorld(
             ipcRenderer.on('update-duration', (event: IpcRendererEvent, duration) => callback(duration));
         },
 
+        onUpdateNewlineEnabled: (callback: (isEnabled: boolean) => void) => {
+            ipcRenderer.on('update-newline-enabled', (event: IpcRendererEvent, isEnabled) => callback(isEnabled));
+        },
+
         onUpdateIconEnabled: (callback: (isEnabled: boolean) => void) => {
             ipcRenderer.on('update-icon-enabled', (event: IpcRendererEvent, isEnabled) => callback(isEnabled));
+        },
+
+        onUpdateInlineImgEnabled: (callback: (isEnabled: boolean) => void) => {
+            ipcRenderer.on('update-inline-img-enabled', (event: IpcRendererEvent, isEnabled) => callback(isEnabled));
         },
 
         onUpdateImgEnabled: (callback: (isEnabled: boolean) => void) => {

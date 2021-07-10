@@ -26,10 +26,19 @@ body {
 
 .content {
     grid-row: 1;
+}
+
+.text {
+    margin-right: 10px;
     color: #ffffff;
     font-weight: bold;
     -webkit-text-stroke-color: #000000;
     -webkit-text-stroke-width: 2px;
+}
+
+.inline-image {
+    margin-right: 10px;
+    vertical-align: text-top;
 }
 
 /*!

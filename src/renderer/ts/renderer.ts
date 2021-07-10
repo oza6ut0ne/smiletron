@@ -3,19 +3,24 @@ import { noTruncSplit } from '../../common/util';
 import './window';
 
 const ICON_SEPARATOR = '##ICON##';
+const INLINE_IMG_SEPARATOR = '##INLINE_IMG##';
 const IMG_SEPARATOR = '##IMG##';
 const FLASHING_DECAY_TIME_MSEC = 1000;
 
 let durationPerDisplayMsec: number;
 let iconEnabled: boolean;
 let imgEnabled: boolean;
+let inlineImgEnabled: boolean;
+let newlineEnabled: boolean;
 let isPause = false;
 
 
 document.addEventListener('DOMContentLoaded', () => {
     window.electron.requestDefaultDuration(setupIpcHandlers);
     window.electron.requestDuration((duration) => durationPerDisplayMsec = duration);
+    window.electron.requestNewlineEnabled((isEnabled) => newlineEnabled = isEnabled);
     window.electron.requestIconEnabled((isEnabled) => iconEnabled = isEnabled);
+    window.electron.requestInlineImgEnabled((isEnabled) => inlineImgEnabled = isEnabled);
     window.electron.requestImgEnabled((isEnabled) => imgEnabled = isEnabled);
 
     for (const eventType of ['focus', 'resize']) {
@@ -55,21 +60,41 @@ function addComment(comment: Comment): Promise<HTMLDivElement> {
         }
     }
 
-    if (imgEnabled) {
+    let imgSrcs: string[] = [];
+    if (text.indexOf(IMG_SEPARATOR) !== -1) {
+        [text, ...imgSrcs] = text.split(IMG_SEPARATOR);
+    }
+
+    if (!newlineEnabled) {
         text = text.replace(/[\r\n]+/g, '');
     }
 
-    const height = calcHeight(text);
+    const imgHeight = calcHeight(text);
+    const inlineImgHeight = calcHeight(' ');
     const imgPromises: Promise<void>[] = [];
-    imgPromises.push(addImage(commentDiv, iconSrc, height));
+    imgPromises.push(addImage(commentDiv, iconSrc, imgHeight, 'image'));
 
-    if (imgEnabled) {
-        text.split(IMG_SEPARATOR).forEach((t, i) => {
-            (i % 2 == 0) ? addSpan(commentDiv, t) : imgPromises.push(addImage(commentDiv, t, height));
+    const contentDiv = document.createElement('div');
+    contentDiv.className ='content';
+    commentDiv.appendChild(contentDiv);
+
+    if (inlineImgEnabled) {
+        text.split(INLINE_IMG_SEPARATOR).forEach((t, i) => {
+            if (i % 2 == 0) {
+                addSpan(contentDiv, t)
+            } else {
+                imgPromises.push(addImage(contentDiv, t, inlineImgHeight, 'inline-image'));
+            }
         });
     } else {
-        const content = text.split(IMG_SEPARATOR).filter((_, i) => i % 2 == 0).join('');
-        addSpan(commentDiv, content);
+        const content = text.split(INLINE_IMG_SEPARATOR).filter((_, i) => i % 2 == 0).join('');
+        addSpan(contentDiv, content);
+    }
+
+    if (imgEnabled) {
+        imgSrcs.forEach((src) => {
+            imgPromises.push(addImage(commentDiv, src, imgHeight, 'image'));
+        });
     }
     document.body.appendChild(commentDiv);
 
@@ -99,13 +124,18 @@ function calcHeight(text: string): number {
 }
 
 function addSpan(div: HTMLDivElement, text: string) {
-    const span = document.createElement('span');
-    span.className = 'content';
-    span.textContent = text;
-    div.appendChild(span);
+    text.split(/[\r\n]+/).forEach((t, i) => {
+        if (i > 0) {
+            div.appendChild(document.createElement('br'));
+        }
+        const span = document.createElement('span');
+        span.className = 'text';
+        span.textContent = t;
+        div.appendChild(span);
+    });
 }
 
-function addImage(div: HTMLDivElement, imgSrc: string, height: number): Promise<void> {
+function addImage(div: HTMLDivElement, imgSrc: string, height: number, className: string): Promise<void> {
     return new Promise((resolve) => {
         if (!imgSrc) {
             resolve();
@@ -121,7 +151,7 @@ function addImage(div: HTMLDivElement, imgSrc: string, height: number): Promise<
             resolve();
         };
 
-        iconImg.className = 'image';
+        iconImg.className = className;
         iconImg.height = height;
         iconImg.src = imgSrc;
         div.appendChild(iconImg);
@@ -198,6 +228,8 @@ function setupIpcHandlers(defaultDuration: number) {
         }
     });
 
+    window.electron.onUpdateNewlineEnabled((isEnabled) => newlineEnabled = isEnabled);
     window.electron.onUpdateIconEnabled((isEnabled) => iconEnabled = isEnabled);
     window.electron.onUpdateImgEnabled((isEnabled) => imgEnabled = isEnabled);
+    window.electron.onUpdateInlineImgEnabled((isEnabled) => inlineImgEnabled = isEnabled);
 }

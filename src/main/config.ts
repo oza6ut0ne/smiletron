@@ -10,7 +10,9 @@ interface ConfigSchema {
     readonly bindAddress: string;
     readonly duration: number;
     readonly deltaDuration: number;
+    readonly newlineEnabled: boolean;
     readonly iconEnabled: boolean;
+    readonly inlineImgEnabled: boolean;
     readonly imgEnabled: boolean;
     readonly useMultiWindow: ToggleStatusWithAuto;
     readonly globalRestoreAccelerator: string;
@@ -23,8 +25,10 @@ class Config {
         bindAddress: '::',
         duration: 5000,
         deltaDuration: 1000,
+        newlineEnabled: true,
         iconEnabled: true,
-        imgEnabled: false,
+        inlineImgEnabled: true,
+        imgEnabled: true,
         useMultiWindow: 'auto',
         globalRestoreAccelerator: 'CmdOrCtrl+Shift+Space'
     };
@@ -77,12 +81,28 @@ class Config {
         this.store.set(getVarName(() => this.defaultValues.deltaDuration), value);
     }
 
+    get newlineEnabled(): boolean {
+        return this.store.get(getVarName(() => this.defaultValues.newlineEnabled));
+    }
+
+    set newlineEnabled(value: boolean) {
+        this.store.set(getVarName(() => this.defaultValues.newlineEnabled), value);
+    }
+
     get iconEnabled(): boolean {
         return this.store.get(getVarName(() => this.defaultValues.iconEnabled));
     }
 
     set iconEnabled(value: boolean) {
         this.store.set(getVarName(() => this.defaultValues.iconEnabled), value);
+    }
+
+    get inlineImgEnabled(): boolean {
+        return this.store.get(getVarName(() => this.defaultValues.inlineImgEnabled));
+    }
+
+    set inlineImgEnabled(value: boolean) {
+        this.store.set(getVarName(() => this.defaultValues.inlineImgEnabled), value);
     }
 
     get imgEnabled(): boolean {

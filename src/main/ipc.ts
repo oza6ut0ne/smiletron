@@ -57,8 +57,10 @@ class CommentSender implements ICommentSender {
 export function setupIpcHandlers(windows: BrowserWindow[], isSingleWindow: boolean, numDisplays: number): ICommentSender {
     ipcMain.handle('request-duration', () => durationPerDisplayMsec);
     ipcMain.handle('request-default-duration', () => config.getDefaultDuration());
+    ipcMain.handle('request-newline-enabled', () => config.newlineEnabled);
     ipcMain.handle('request-icon-enabled', () => config.iconEnabled);
     ipcMain.handle('request-img-enabled', () => config.imgEnabled);
+    ipcMain.handle('request-inline-img-enabled', () => config.inlineImgEnabled);
     return CommentSender.create(windows, isSingleWindow, numDisplays);
 }
 
@@ -89,6 +91,13 @@ function updateDuration(duration: number) {
     });
 }
 
+export function updateNewlineEnabled(isEnabled: boolean) {
+    config.newlineEnabled = isEnabled;
+    BrowserWindow.getAllWindows().forEach(w => {
+        aliveOrNull(w)?.webContents.send('update-newline-enabled', isEnabled);
+    });
+}
+
 export function updateIconEnabled(isEnabled: boolean) {
     config.iconEnabled = isEnabled;
     BrowserWindow.getAllWindows().forEach(w => {
@@ -100,5 +109,12 @@ export function updateImgEnabled(isEnabled: boolean) {
     config.imgEnabled = isEnabled;
     BrowserWindow.getAllWindows().forEach(w => {
         aliveOrNull(w)?.webContents.send('update-img-enabled', isEnabled);
+    });
+}
+
+export function updateInlineImgEnabled(isEnabled: boolean) {
+    config.inlineImgEnabled = isEnabled;
+    BrowserWindow.getAllWindows().forEach(w => {
+        aliveOrNull(w)?.webContents.send('update-inline-img-enabled', isEnabled);
     });
 }
