@@ -29,7 +29,6 @@ body {
 }
 
 .text {
-    margin-right: 10px;
     color: #ffffff;
     font-weight: bold;
     -webkit-text-stroke-color: #000000;
@@ -37,6 +36,7 @@ body {
 }
 
 .inline-image {
+    margin-left: 10px;
     margin-right: 10px;
     vertical-align: text-top;
 }
