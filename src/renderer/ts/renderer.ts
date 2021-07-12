@@ -124,9 +124,12 @@ function calcHeight(text: string): number {
 }
 
 function addSpan(div: HTMLDivElement, text: string) {
-    text.split(/[\r\n]+/).forEach((t, i) => {
+    text.split(/\r|\n|\r\n/).forEach((t, i) => {
         if (i > 0) {
             div.appendChild(document.createElement('br'));
+        }
+        if (t === '') {
+            return;
         }
         const span = document.createElement('span');
         span.className = 'text';
