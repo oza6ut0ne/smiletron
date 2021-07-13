@@ -14,6 +14,7 @@ interface ConfigSchema {
     readonly iconEnabled: boolean;
     readonly inlineImgEnabled: boolean;
     readonly imgEnabled: boolean;
+    readonly videoEnabled: boolean;
     readonly useMultiWindow: ToggleStatusWithAuto;
     readonly globalRestoreAccelerator: string;
 }
@@ -29,6 +30,7 @@ class Config {
         iconEnabled: true,
         inlineImgEnabled: true,
         imgEnabled: true,
+        videoEnabled: true,
         useMultiWindow: 'auto',
         globalRestoreAccelerator: 'CmdOrCtrl+Shift+Space'
     };
@@ -111,6 +113,14 @@ class Config {
 
     set imgEnabled(value: boolean) {
         this.store.set(getVarName(() => this.defaultValues.imgEnabled), value);
+    }
+
+    get videoEnabled(): boolean {
+        return this.store.get(getVarName(() => this.defaultValues.videoEnabled));
+    }
+
+    set videoEnabled(value: boolean) {
+        this.store.set(getVarName(() => this.defaultValues.videoEnabled), value);
     }
 
     get useMultiWindow(): ToggleStatusWithAuto {

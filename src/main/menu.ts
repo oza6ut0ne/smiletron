@@ -1,6 +1,6 @@
 import { app, BrowserWindow, globalShortcut, Menu, MenuItem, Tray } from 'electron';
 import { config, toggleStatusWithAuto } from './config';
-import { addDuration, resetDuration, togglePause, updateIconEnabled, updateImgEnabled, updateInlineImgEnabled, updateNewlineEnabled } from './ipc';
+import { addDuration, resetDuration, togglePause, updateIconEnabled, updateImgEnabled, updateInlineImgEnabled, updateNewlineEnabled, updateVideoEnabled } from './ipc';
 import { isExe, isMac, isAppImage, restoreWindow, aliveOrNull } from './util';
 
 const relaunchExecPath = isExe ? process.env.PORTABLE_EXECUTABLE_FILE : undefined;
@@ -65,13 +65,17 @@ function createTrayMenu(windows: BrowserWindow[]): Menu {
                 { label: 'enabled', type: 'radio', checked: config.iconEnabled, click: () => updateIconEnabled(true) },
                 { label: 'disabled', type: 'radio', checked: !config.iconEnabled, click: () => updateIconEnabled(false) },
             ]},
+            { label: 'Show Inline Imgae', submenu: [
+                { label: 'enabled', type: 'radio', checked: config.inlineImgEnabled, click: () => updateInlineImgEnabled(true) },
+                { label: 'disabled', type: 'radio', checked: !config.inlineImgEnabled, click: () => updateInlineImgEnabled(false) },
+            ]},
             { label: 'Show Imgae', submenu: [
                 { label: 'enabled', type: 'radio', checked: config.imgEnabled, click: () => updateImgEnabled(true) },
                 { label: 'disabled', type: 'radio', checked: !config.imgEnabled, click: () => updateImgEnabled(false) },
             ]},
-            { label: 'Show Inline Imgae', submenu: [
-                { label: 'enabled', type: 'radio', checked: config.inlineImgEnabled, click: () => updateInlineImgEnabled(true) },
-                { label: 'disabled', type: 'radio', checked: !config.inlineImgEnabled, click: () => updateInlineImgEnabled(false) },
+            { label: 'Show Video', submenu: [
+                { label: 'enabled', type: 'radio', checked: config.videoEnabled, click: () => updateVideoEnabled(true) },
+                { label: 'disabled', type: 'radio', checked: !config.videoEnabled, click: () => updateVideoEnabled(false) },
             ]},
             { label: 'Multi Window', submenu: toggleStatusWithAuto.map(v => {
                 return { label: v, checked: config.useMultiWindow === v,

@@ -32,6 +32,10 @@ contextBridge.exposeInMainWorld(
             ipcRenderer.invoke('request-img-enabled').then((result) => callback(result));
         },
 
+        requestVideoEnabled: (callback: (isEnabled: boolean) => void) => {
+            ipcRenderer.invoke('request-video-enabled').then((result) => callback(result));
+        },
+
         onCommentReceived: (callback: (comment: Comment, rendererInfo: RendererInfo) => void) => {
             ipcRenderer.on(
                 'comment', (event: IpcRendererEvent, comment, rendererInfo) => callback(comment, rendererInfo));
@@ -59,6 +63,10 @@ contextBridge.exposeInMainWorld(
 
         onUpdateImgEnabled: (callback: (isEnabled: boolean) => void) => {
             ipcRenderer.on('update-img-enabled', (event: IpcRendererEvent, isEnabled) => callback(isEnabled));
+        },
+
+        onUpdateVideoEnabled: (callback: (isEnabled: boolean) => void) => {
+            ipcRenderer.on('update-video-enabled', (event: IpcRendererEvent, isEnabled) => callback(isEnabled));
         },
     },
 );

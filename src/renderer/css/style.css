@@ -21,7 +21,10 @@ body {
 
 .image {
     grid-row: 1;
-    vertical-align: text-top;
+}
+
+.video {
+    grid-row: 1;
 }
 
 .content {

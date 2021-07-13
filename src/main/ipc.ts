@@ -59,8 +59,9 @@ export function setupIpcHandlers(windows: BrowserWindow[], isSingleWindow: boole
     ipcMain.handle('request-default-duration', () => config.getDefaultDuration());
     ipcMain.handle('request-newline-enabled', () => config.newlineEnabled);
     ipcMain.handle('request-icon-enabled', () => config.iconEnabled);
-    ipcMain.handle('request-img-enabled', () => config.imgEnabled);
     ipcMain.handle('request-inline-img-enabled', () => config.inlineImgEnabled);
+    ipcMain.handle('request-img-enabled', () => config.imgEnabled);
+    ipcMain.handle('request-video-enabled', () => config.videoEnabled);
     return CommentSender.create(windows, isSingleWindow, numDisplays);
 }
 
@@ -105,6 +106,13 @@ export function updateIconEnabled(isEnabled: boolean) {
     });
 }
 
+export function updateInlineImgEnabled(isEnabled: boolean) {
+    config.inlineImgEnabled = isEnabled;
+    BrowserWindow.getAllWindows().forEach(w => {
+        aliveOrNull(w)?.webContents.send('update-inline-img-enabled', isEnabled);
+    });
+}
+
 export function updateImgEnabled(isEnabled: boolean) {
     config.imgEnabled = isEnabled;
     BrowserWindow.getAllWindows().forEach(w => {
@@ -112,9 +120,9 @@ export function updateImgEnabled(isEnabled: boolean) {
     });
 }
 
-export function updateInlineImgEnabled(isEnabled: boolean) {
-    config.inlineImgEnabled = isEnabled;
+export function updateVideoEnabled(isEnabled: boolean) {
+    config.videoEnabled = isEnabled;
     BrowserWindow.getAllWindows().forEach(w => {
-        aliveOrNull(w)?.webContents.send('update-inline-img-enabled', isEnabled);
+        aliveOrNull(w)?.webContents.send('update-video-enabled', isEnabled);
     });
 }

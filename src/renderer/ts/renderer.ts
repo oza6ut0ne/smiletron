@@ -5,12 +5,14 @@ import './window';
 const ICON_SEPARATOR = '##ICON##';
 const INLINE_IMG_SEPARATOR = '##INLINE_IMG##';
 const IMG_SEPARATOR = '##IMG##';
+const VIDEO_SEPARATOR = '##VIDEO##';
 const FLASHING_DECAY_TIME_MSEC = 1000;
 
 let durationPerDisplayMsec: number;
 let iconEnabled: boolean;
-let imgEnabled: boolean;
 let inlineImgEnabled: boolean;
+let imgEnabled: boolean;
+let videoEnabled: boolean;
 let newlineEnabled: boolean;
 let isPause = false;
 
@@ -22,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.electron.requestIconEnabled((isEnabled) => iconEnabled = isEnabled);
     window.electron.requestInlineImgEnabled((isEnabled) => inlineImgEnabled = isEnabled);
     window.electron.requestImgEnabled((isEnabled) => imgEnabled = isEnabled);
+    window.electron.requestVideoEnabled((isEnabled) => videoEnabled = isEnabled);
 
     for (const eventType of ['focus', 'resize']) {
         window.addEventListener(eventType, () => flashWindow(0, 255, 0, 0.3));
@@ -60,6 +63,11 @@ function addComment(comment: Comment): Promise<HTMLDivElement> {
         }
     }
 
+    let videoSrcs: string[] = [];
+    if (text.indexOf(VIDEO_SEPARATOR) !== -1) {
+        [text, ...videoSrcs] = text.split(VIDEO_SEPARATOR);
+    }
+
     let imgSrcs: string[] = [];
     if (text.indexOf(IMG_SEPARATOR) !== -1) {
         [text, ...imgSrcs] = text.split(IMG_SEPARATOR);
@@ -69,10 +77,10 @@ function addComment(comment: Comment): Promise<HTMLDivElement> {
         text = text.replace(/[\r\n]+/g, '');
     }
 
-    const imgHeight = calcHeight(text);
+    const mediaHeight = calcHeight(text);
     const inlineImgHeight = calcHeight(' ');
-    const imgPromises: Promise<void>[] = [];
-    imgPromises.push(addImage(commentDiv, iconSrc, imgHeight, 'image'));
+    const mediaPromises: Promise<void>[] = [];
+    mediaPromises.push(addImage(commentDiv, iconSrc, mediaHeight, 'image'));
 
     const contentDiv = document.createElement('div');
     contentDiv.className ='content';
@@ -83,7 +91,7 @@ function addComment(comment: Comment): Promise<HTMLDivElement> {
             if (i % 2 == 0) {
                 addSpan(contentDiv, t)
             } else {
-                imgPromises.push(addImage(contentDiv, t, inlineImgHeight, 'inline-image'));
+                mediaPromises.push(addImage(contentDiv, t, inlineImgHeight, 'inline-image'));
             }
         });
     } else {
@@ -93,7 +101,12 @@ function addComment(comment: Comment): Promise<HTMLDivElement> {
 
     if (imgEnabled) {
         imgSrcs.forEach((src) => {
-            imgPromises.push(addImage(commentDiv, src, imgHeight, 'image'));
+            mediaPromises.push(addImage(commentDiv, src, mediaHeight, 'image'));
+        });
+    }
+    if (videoEnabled) {
+        videoSrcs.forEach((src) => {
+            mediaPromises.push(addVideo(commentDiv, src, mediaHeight, 'video'));
         });
     }
     document.body.appendChild(commentDiv);
@@ -104,7 +117,7 @@ function addComment(comment: Comment): Promise<HTMLDivElement> {
         commentDiv.style.top = (newTop > 0 ? newTop : 0) + 'px';
     }
 
-    return Promise.allSettled(imgPromises).then(() => commentDiv);
+    return Promise.allSettled(mediaPromises).then(() => commentDiv);
 }
 
 function calcHeight(text: string): number {
@@ -139,25 +152,53 @@ function addSpan(div: HTMLDivElement, text: string) {
 }
 
 function addImage(div: HTMLDivElement, imgSrc: string, height: number, className: string): Promise<void> {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
         if (!imgSrc) {
-            resolve();
+            reject();
             return;
         }
 
-        const iconImg: HTMLImageElement = document.createElement('img');
-        iconImg.onload = () => {
+        const image: HTMLImageElement = document.createElement('img');
+        image.onload = () => {
             resolve()
         };
-        iconImg.onerror = () => {
-            iconImg.remove();
-            resolve();
+        image.onerror = () => {
+            image.remove();
+            reject();
         };
 
-        iconImg.className = className;
-        iconImg.height = height;
-        iconImg.src = imgSrc;
-        div.appendChild(iconImg);
+        image.className = className;
+        image.height = height;
+        image.src = imgSrc;
+        div.appendChild(image);
+    });
+}
+
+function addVideo(div: HTMLDivElement, videoSrc: string, height: number, className: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+        if (!videoSrc) {
+            reject();
+            return;
+        }
+
+        const video: HTMLVideoElement = document.createElement('video');
+        video.onloadedmetadata = () => {
+            resolve();
+        };
+        video.onerror = () => {
+            video.remove();
+            reject();
+        };
+
+        video.className = className;
+        video.height = height;
+        video.autoplay = true;
+        video.muted = true;
+        video.loop = true;
+        video.controls = false;
+        video.playsInline = true;
+        video.src = videoSrc;
+        div.appendChild(video);
     });
 }
 
@@ -233,6 +274,7 @@ function setupIpcHandlers(defaultDuration: number) {
 
     window.electron.onUpdateNewlineEnabled((isEnabled) => newlineEnabled = isEnabled);
     window.electron.onUpdateIconEnabled((isEnabled) => iconEnabled = isEnabled);
-    window.electron.onUpdateImgEnabled((isEnabled) => imgEnabled = isEnabled);
     window.electron.onUpdateInlineImgEnabled((isEnabled) => inlineImgEnabled = isEnabled);
+    window.electron.onUpdateImgEnabled((isEnabled) => imgEnabled = isEnabled);
+    window.electron.onUpdateVideoEnabled((isEnabled) => videoEnabled = isEnabled);
 }
