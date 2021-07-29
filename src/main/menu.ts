@@ -44,6 +44,7 @@ function createTrayMenu(windows: BrowserWindow[]): Menu {
         { label: 'Minimize', click: () => {
             windows.forEach(w => aliveOrNull(w)?.minimize());
         }},
+        { label: 'Pause / Unpause', accelerator: 'Space', click: togglePause },
         { label: 'Windows', visible: (windows.length > 1),
           submenu: windows.map((w, i) => {
               return { label: `Window ${i}`, submenu: [
@@ -93,10 +94,6 @@ function addDebugMenu(contextMenu: Menu, windows: BrowserWindow[]) {
         windows.map((w, i) => createPerWindowsDebugMenuItem(w, i))
     );
 
-    const togglePauseMenuItem = new MenuItem(
-        { label: 'Pause / Unpause', accelerator: 'Space', click: togglePause }
-    );
-
     const devToolsMenuItem = new MenuItem({ label: 'DevTools',
         submenu: [
             { label: 'open', click: () => windows.forEach(w => {
@@ -139,7 +136,6 @@ function addDebugMenu(contextMenu: Menu, windows: BrowserWindow[]) {
     );
 
     const debugSubMenu = Menu.buildFromTemplate([
-        togglePauseMenuItem,
         devToolsMenuItem,
         mouseEventsMenuItem,
         taskbarMenuItem,
