@@ -57,26 +57,6 @@ function createTrayMenu(windows: BrowserWindow[]): Menu {
                 { label: 'down', accelerator: '-', click: () => addDuration(config.deltaDuration) },
                 { label: 'reset', accelerator: 'Shift+0', click: () => resetDuration() }
             ]},
-            { label: 'Allow Newline', submenu: [
-                { label: 'enabled', type: 'radio', checked: config.newlineEnabled, click: () => updateNewlineEnabled(true) },
-                { label: 'disabled', type: 'radio', checked: !config.newlineEnabled, click: () => updateNewlineEnabled(false) },
-            ]},
-            { label: 'Show Icon', submenu: [
-                { label: 'enabled', type: 'radio', checked: config.iconEnabled, click: () => updateIconEnabled(true) },
-                { label: 'disabled', type: 'radio', checked: !config.iconEnabled, click: () => updateIconEnabled(false) },
-            ]},
-            { label: 'Show Inline Imgae', submenu: [
-                { label: 'enabled', type: 'radio', checked: config.inlineImgEnabled, click: () => updateInlineImgEnabled(true) },
-                { label: 'disabled', type: 'radio', checked: !config.inlineImgEnabled, click: () => updateInlineImgEnabled(false) },
-            ]},
-            { label: 'Show Imgae', submenu: [
-                { label: 'enabled', type: 'radio', checked: config.imgEnabled, click: () => updateImgEnabled(true) },
-                { label: 'disabled', type: 'radio', checked: !config.imgEnabled, click: () => updateImgEnabled(false) },
-            ]},
-            { label: 'Show Video', submenu: [
-                { label: 'enabled', type: 'radio', checked: config.videoEnabled, click: () => updateVideoEnabled(true) },
-                { label: 'disabled', type: 'radio', checked: !config.videoEnabled, click: () => updateVideoEnabled(false) },
-            ]},
             { label: 'Multi Window', submenu: toggleStatusWithAuto.map(v => {
                 return { label: v, checked: config.useMultiWindow === v,
                          type: 'radio', click: () => {
@@ -86,7 +66,12 @@ function createTrayMenu(windows: BrowserWindow[]): Menu {
                                 app.quit();
                              }
                 }}
-            })}
+            })},
+            { label: 'Allow Newline', type: 'checkbox', checked: config.newlineEnabled, click: (item) => updateNewlineEnabled(item.checked) },
+            { label: 'Show Icon', type: 'checkbox', checked: config.iconEnabled, click: (item) => updateIconEnabled(item.checked) },
+            { label: 'Show Inline Imgae', type: 'checkbox', checked: config.inlineImgEnabled, click: (item) => updateInlineImgEnabled(item.checked) },
+            { label: 'Show Imgae', type: 'checkbox', checked: config.imgEnabled, click: (item) => updateImgEnabled(item.checked) },
+            { label: 'Show Video', type: 'checkbox', checked: config.videoEnabled, click: (item) => updateVideoEnabled(item.checked) },
         ]}
     ]);
 
@@ -127,27 +112,27 @@ function addDebugMenu(contextMenu: Menu, windows: BrowserWindow[]) {
         submenu: [
             { label: 'enable', click: () => windows.forEach((w, i) => {
                 aliveOrNull(w)?.setIgnoreMouseEvents(false);
-                putCheckOnItem(contextMenu.getMenuItemById(`MouseEvents ${i} enabled`), true);
+                putCheckOnItem(contextMenu.getMenuItemById(`Enable MouseEvents ${i}`), true);
                 refreshTrayMenu();
             })},
             { label: 'disable', click: () => windows.forEach((w, i) => {
                 aliveOrNull(w)?.setIgnoreMouseEvents(true);
-                putCheckOnItem(contextMenu.getMenuItemById(`MouseEvents ${i} disabled`), true);
+                putCheckOnItem(contextMenu.getMenuItemById(`Enable MouseEvents ${i}`), false);
                 refreshTrayMenu();
             })},
         ]},
     );
 
-    const taskbarMenuItem  = new MenuItem({ label: 'Taskbar',
+    const taskbarMenuItem  = new MenuItem({ label: 'Show in Taskbar',
         submenu: [
             { label: 'enable', click: () => windows.forEach((w, i) => {
                 aliveOrNull(w)?.setSkipTaskbar(false);
-                putCheckOnItem(contextMenu.getMenuItemById(`Taskbar ${i} enabled`), true);
+                putCheckOnItem(contextMenu.getMenuItemById(`Show in Taskbar ${i}`), true);
                 refreshTrayMenu();
             })},
             { label: 'disable', click: () => windows.forEach((w, i) => {
                 aliveOrNull(w)?.setSkipTaskbar(true);
-                putCheckOnItem(contextMenu.getMenuItemById(`Taskbar ${i} disabled`), true);
+                putCheckOnItem(contextMenu.getMenuItemById(`Show in Taskbar ${i}`), false);
                 refreshTrayMenu();
             })},
         ]},
@@ -169,26 +154,12 @@ function addDebugMenu(contextMenu: Menu, windows: BrowserWindow[]) {
 function createPerWindowsDebugMenuItem(window: BrowserWindow, index: number): MenuItem {
     return new MenuItem({ label: `Window ${index}`, submenu: [
         { label: `Toggle DevTools`, click: () => aliveOrNull(window)?.webContents.toggleDevTools() },
-        { label: 'MouseEvents', submenu: [
-            { label: 'enabled', id: `MouseEvents ${index} enabled`,
-              type: 'radio', click: () =>
-                  aliveOrNull(window)?.setIgnoreMouseEvents(false)
-            },
-            { label: 'disabled', id: `MouseEvents ${index} disabled`,
-              type: 'radio', checked: true, click: () =>
-                  aliveOrNull(window)?.setIgnoreMouseEvents(true)
-            },
-        ]},
-        { label: 'Taskbar', submenu: [
-            { label: 'enabled', id: `Taskbar ${index} enabled`,
-              type: 'radio', click: () =>
-                  aliveOrNull(window)?.setSkipTaskbar(false)
-            },
-            { label: 'disabled', id: `Taskbar ${index} disabled`,
-              type: 'radio', checked: true, click: () =>
-                  aliveOrNull(window)?.setSkipTaskbar(true)
-            },
-        ]},
+        { label: 'Enable MouseEvents', id: `Enable MouseEvents ${index}`, type: 'checkbox',
+          click: (item) => aliveOrNull(window)?.setIgnoreMouseEvents(!item.checked)
+        },
+        { label: 'Show in Taskbar', id: `Show in Taskbar ${index}`, type: 'checkbox',
+          click: (item) => aliveOrNull(window)?.setSkipTaskbar(!item.checked)
+        },
     ]});
 }
 
