@@ -1,7 +1,7 @@
 import { app, BrowserWindow, globalShortcut, Menu, MenuItem, Tray } from 'electron';
 import { config, toggleStatusWithAuto } from './config';
 import { addDuration, resetDuration, togglePause, updateIconEnabled, updateImgEnabled, updateInlineImgEnabled, updateNewlineEnabled, updateVideoEnabled } from './ipc';
-import { isExe, isMac, isAppImage, restoreWindow, aliveOrNull } from './util';
+import { isExe, isMac, isWindows, isAppImage, restoreWindow, aliveOrNull } from './util';
 
 const relaunchExecPath = isExe ? process.env.PORTABLE_EXECUTABLE_FILE : undefined;
 
@@ -32,7 +32,12 @@ export function setupMenu(iconPath: string) {
     Menu.setApplicationMenu(appMenu);
 
     if (config.globalRestoreAccelerator) {
-        globalShortcut.register(config.globalRestoreAccelerator, () => windows.forEach(w => restoreWindow(w)));
+        globalShortcut.register(config.globalRestoreAccelerator, () =>{
+            if (isWindows) {
+                windows.forEach(w => aliveOrNull(w)?.minimize());
+            }
+            windows.forEach(w => restoreWindow(w))
+        });
     }
 }
 
