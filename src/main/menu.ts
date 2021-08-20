@@ -32,7 +32,7 @@ export function setupMenu(iconPath: string) {
     Menu.setApplicationMenu(appMenu);
 
     if (config.globalRestoreAccelerator) {
-        globalShortcut.register(config.globalRestoreAccelerator, () =>{
+        globalShortcut.register(config.globalRestoreAccelerator, () => {
             if (isWindows) {
                 windows.forEach(w => aliveOrNull(w)?.minimize());
             }
