@@ -72,6 +72,7 @@ function createWindow(rect: Rectangle): BrowserWindow {
     window.setSize(rect.width, rect.height);
     window.setBounds(rect);
     window.setAlwaysOnTop(true, 'screen-saver');
+    window.setVisibleOnAllWorkspaces(config.visibleOnAllWorkspaces, { visibleOnFullScreen: isMac });
     window.setIgnoreMouseEvents(true);
     window.setSkipTaskbar(true);
     window.loadURL(mainUrl);

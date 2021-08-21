@@ -10,6 +10,7 @@ interface ConfigSchema {
     readonly bindAddress: string;
     readonly duration: number;
     readonly deltaDuration: number;
+    readonly visibleOnAllWorkspaces: boolean;
     readonly newlineEnabled: boolean;
     readonly iconEnabled: boolean;
     readonly inlineImgEnabled: boolean;
@@ -26,6 +27,7 @@ class Config {
         bindAddress: '::',
         duration: 5000,
         deltaDuration: 1000,
+        visibleOnAllWorkspaces: true,
         newlineEnabled: true,
         iconEnabled: true,
         inlineImgEnabled: true,
@@ -81,6 +83,14 @@ class Config {
 
     set deltaDuration(value: number) {
         this.store.set(getVarName(() => this.defaultValues.deltaDuration), value);
+    }
+
+    get visibleOnAllWorkspaces(): boolean {
+        return this.store.get(getVarName(() => this.defaultValues.visibleOnAllWorkspaces));
+    }
+
+    set visibleOnAllWorkspaces(value: boolean) {
+        this.store.set(getVarName(() => this.defaultValues.visibleOnAllWorkspaces), value);
     }
 
     get newlineEnabled(): boolean {

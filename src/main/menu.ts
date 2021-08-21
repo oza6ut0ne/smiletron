@@ -1,4 +1,4 @@
-import { app, BrowserWindow, globalShortcut, Menu, MenuItem, Tray } from 'electron';
+import { app, BrowserWindow, globalShortcut, Menu, MenuItem, nativeImage, Tray } from 'electron';
 import { config, toggleStatusWithAuto } from './config';
 import { addDuration, resetDuration, togglePause, updateIconEnabled, updateImgEnabled, updateInlineImgEnabled, updateNewlineEnabled, updateVideoEnabled } from './ipc';
 import { isExe, isMac, isWindows, isAppImage, restoreWindow, aliveOrNull } from './util';
@@ -13,9 +13,10 @@ export function setupMenu(iconPath: string) {
     const windows = BrowserWindow.getAllWindows();
     trayMenu = createTrayMenu(windows);
 
-    if (!isMac) {
-        tray = new Tray(iconPath);
-        tray.setToolTip(app.name);
+    const icon = nativeImage.createFromPath(iconPath);
+    tray = new Tray(isMac ? icon.resize({ width: 16, height: 16 }) : icon);
+    tray.setToolTip(app.name);
+    if (isWindows) {
         tray.addListener('click', () => {
             if (windows.filter(w => !w.isDestroyed()).every(w => w.isMinimized())) {
                 windows.forEach(w => restoreWindow(w));
@@ -23,8 +24,8 @@ export function setupMenu(iconPath: string) {
                 windows.forEach(w => aliveOrNull(w)?.minimize());
             }
         });
-        tray.setContextMenu(trayMenu);
     }
+    tray.setContextMenu(trayMenu);
 
     const defaultAppMenu = Menu.getApplicationMenu();
     const appMenu = defaultAppMenu ? defaultAppMenu : new Menu();
@@ -73,6 +74,10 @@ function createTrayMenu(windows: BrowserWindow[]): Menu {
                              }
                 }}
             })},
+            { label: 'Visible on all Workspaces', type: 'checkbox', checked: config.visibleOnAllWorkspaces, click: (item) => {
+                config.visibleOnAllWorkspaces = item.checked;
+                windows.forEach(w => aliveOrNull(w)?.setVisibleOnAllWorkspaces(item.checked, { visibleOnFullScreen: isMac }));
+            }},
             { label: 'Allow Newline', type: 'checkbox', checked: config.newlineEnabled, click: (item) => updateNewlineEnabled(item.checked) },
             { label: 'Show Icon', type: 'checkbox', checked: config.iconEnabled, click: (item) => updateIconEnabled(item.checked) },
             { label: 'Show Inline Imgae', type: 'checkbox', checked: config.inlineImgEnabled, click: (item) => updateInlineImgEnabled(item.checked) },
