@@ -8,9 +8,14 @@ export function startTcpServer(commentSender: ICommentSender, listenPort: number
     }
 
     net.createServer(conn => {
+        const buffers: Buffer[] = [];
         conn.on('data', data => {
-            commentSender.sendCommentToRenderer(data.toString());
+            buffers.push(data);
             conn.end();
+        });
+        conn.on('end', () => {
+            const buf = Buffer.concat(buffers);
+            commentSender.sendCommentToRenderer(buf.toString());
         });
     }).listen(listenPort, bindAddress);
 }
