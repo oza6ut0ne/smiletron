@@ -29,7 +29,8 @@ const main = {
   },
   output: {
     filename: 'main.js',
-    path: path.join(__dirname, 'dist')
+    path: path.join(__dirname, 'dist'),
+    hashFunction: "sha256"
   },
   node: {
     __dirname: false,
@@ -44,7 +45,8 @@ const renderer = {
   entry: path.join(__dirname, 'src/renderer/ts/renderer'),
   output: {
     filename: 'bundle.js',
-    path: path.join(__dirname, 'dist/js')
+    path: path.join(__dirname, 'dist/js'),
+    hashFunction: "sha256"
   }
 };
 
@@ -54,7 +56,8 @@ const preload = {
   entry: path.join(__dirname, 'src/preload/preload'),
   output: {
     filename: 'preload.js',
-    path: path.join(__dirname, 'dist')
+    path: path.join(__dirname, 'dist'),
+    hashFunction: "sha256"
   }
 };
 
