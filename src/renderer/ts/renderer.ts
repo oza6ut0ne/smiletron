@@ -14,6 +14,7 @@ let inlineImgEnabled: boolean;
 let imgEnabled: boolean;
 let videoEnabled: boolean;
 let newlineEnabled: boolean;
+let roundIconEnabled: boolean;
 let isPause = false;
 
 
@@ -25,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.electron.requestInlineImgEnabled((isEnabled) => inlineImgEnabled = isEnabled);
     window.electron.requestImgEnabled((isEnabled) => imgEnabled = isEnabled);
     window.electron.requestVideoEnabled((isEnabled) => videoEnabled = isEnabled);
+    window.electron.requestRoundIconEnabled((isEnabled) => roundIconEnabled = isEnabled);
 
     for (const eventType of ['focus', 'resize']) {
         window.addEventListener(eventType, () => flashWindow(0, 255, 0, 0.3));
@@ -80,7 +82,7 @@ function addComment(comment: Comment): Promise<HTMLDivElement> {
     const mediaHeight = calcHeight(text);
     const inlineImgHeight = calcHeight(' ');
     const mediaPromises: Promise<void>[] = [];
-    mediaPromises.push(addImage(commentDiv, iconSrc, mediaHeight, 'image'));
+    mediaPromises.push(addImage(commentDiv, iconSrc, mediaHeight, 'image', roundIconEnabled));
 
     const contentDiv = document.createElement('div');
     contentDiv.className ='content';
@@ -151,7 +153,7 @@ function addSpan(div: HTMLDivElement, text: string) {
     });
 }
 
-function addImage(div: HTMLDivElement, imgSrc: string, height: number, className: string): Promise<void> {
+function addImage(div: HTMLDivElement, imgSrc: string, height: number, className: string, round: boolean = false): Promise<void> {
     return new Promise((resolve, reject) => {
         if (!imgSrc) {
             reject();
@@ -168,6 +170,9 @@ function addImage(div: HTMLDivElement, imgSrc: string, height: number, className
         };
 
         image.className = className;
+        if (round) {
+            image.classList.add('round');
+        }
         image.height = height;
         image.src = imgSrc;
         div.appendChild(image);
@@ -277,4 +282,5 @@ function setupIpcHandlers(defaultDuration: number) {
     window.electron.onUpdateInlineImgEnabled((isEnabled) => inlineImgEnabled = isEnabled);
     window.electron.onUpdateImgEnabled((isEnabled) => imgEnabled = isEnabled);
     window.electron.onUpdateVideoEnabled((isEnabled) => videoEnabled = isEnabled);
+    window.electron.onUpdateRoundIconEnabled((isEnabled) => roundIconEnabled = isEnabled);
 }

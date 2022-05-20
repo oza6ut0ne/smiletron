@@ -36,6 +36,10 @@ contextBridge.exposeInMainWorld(
             ipcRenderer.invoke('request-video-enabled').then((result) => callback(result));
         },
 
+        requestRoundIconEnabled: (callback: (isEnabled: boolean) => void) => {
+            ipcRenderer.invoke('request-round-icon-enabled').then((result) => callback(result));
+        },
+
         onCommentReceived: (callback: (comment: Comment, rendererInfo: RendererInfo) => void) => {
             ipcRenderer.on(
                 'comment', (event: IpcRendererEvent, comment, rendererInfo) => callback(comment, rendererInfo));
@@ -67,6 +71,10 @@ contextBridge.exposeInMainWorld(
 
         onUpdateVideoEnabled: (callback: (isEnabled: boolean) => void) => {
             ipcRenderer.on('update-video-enabled', (event: IpcRendererEvent, isEnabled) => callback(isEnabled));
+        },
+
+        onUpdateRoundIconEnabled: (callback: (isEnabled: boolean) => void) => {
+            ipcRenderer.on('update-round-icon-enabled', (event: IpcRendererEvent, isEnabled) => callback(isEnabled));
         },
     },
 );

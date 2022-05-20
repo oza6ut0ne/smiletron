@@ -44,6 +44,10 @@ body {
     vertical-align: text-top;
 }
 
+.round {
+    border-radius: 50%;
+}
+
 /*!
  * "Blobmoji" is lisenced under the SIL Open Font License 1.1
  * by https://github.com/C1710/blobmoji

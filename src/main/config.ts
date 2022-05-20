@@ -11,12 +11,13 @@ interface ConfigSchema {
     readonly duration: number;
     readonly deltaDuration: number;
     readonly visibleOnAllWorkspaces: boolean;
+    readonly useMultiWindow: ToggleStatusWithAuto;
     readonly newlineEnabled: boolean;
     readonly iconEnabled: boolean;
     readonly inlineImgEnabled: boolean;
     readonly imgEnabled: boolean;
     readonly videoEnabled: boolean;
-    readonly useMultiWindow: ToggleStatusWithAuto;
+    readonly roundIconEnabled: boolean;
     readonly globalRestoreAccelerator: string;
 }
 
@@ -28,12 +29,13 @@ class Config {
         duration: 5000,
         deltaDuration: 1000,
         visibleOnAllWorkspaces: true,
+        useMultiWindow: 'auto',
         newlineEnabled: true,
         iconEnabled: true,
         inlineImgEnabled: true,
         imgEnabled: true,
         videoEnabled: true,
-        useMultiWindow: 'auto',
+        roundIconEnabled: false,
         globalRestoreAccelerator: 'CmdOrCtrl+Shift+Space'
     };
 
@@ -93,6 +95,14 @@ class Config {
         this.store.set(getVarName(() => this.defaultValues.visibleOnAllWorkspaces), value);
     }
 
+    get useMultiWindow(): ToggleStatusWithAuto {
+        return this.store.get(getVarName(() => this.defaultValues.useMultiWindow));
+    }
+
+    set useMultiWindow(value: ToggleStatusWithAuto) {
+        this.store.set(getVarName(() => this.defaultValues.useMultiWindow), value);
+    }
+
     get newlineEnabled(): boolean {
         return this.store.get(getVarName(() => this.defaultValues.newlineEnabled));
     }
@@ -133,12 +143,12 @@ class Config {
         this.store.set(getVarName(() => this.defaultValues.videoEnabled), value);
     }
 
-    get useMultiWindow(): ToggleStatusWithAuto {
-        return this.store.get(getVarName(() => this.defaultValues.useMultiWindow));
+    get roundIconEnabled(): boolean {
+        return this.store.get(getVarName(() => this.defaultValues.roundIconEnabled));
     }
 
-    set useMultiWindow(value: ToggleStatusWithAuto) {
-        this.store.set(getVarName(() => this.defaultValues.useMultiWindow), value);
+    set roundIconEnabled(value: boolean) {
+        this.store.set(getVarName(() => this.defaultValues.roundIconEnabled), value);
     }
 
     get globalRestoreAccelerator(): string {

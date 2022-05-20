@@ -62,6 +62,7 @@ export function setupIpcHandlers(windows: BrowserWindow[], isSingleWindow: boole
     ipcMain.handle('request-inline-img-enabled', () => config.inlineImgEnabled);
     ipcMain.handle('request-img-enabled', () => config.imgEnabled);
     ipcMain.handle('request-video-enabled', () => config.videoEnabled);
+    ipcMain.handle('request-round-icon-enabled', () => config.roundIconEnabled);
     return CommentSender.create(windows, isSingleWindow, numDisplays);
 }
 
@@ -124,5 +125,12 @@ export function updateVideoEnabled(isEnabled: boolean) {
     config.videoEnabled = isEnabled;
     BrowserWindow.getAllWindows().forEach(w => {
         aliveOrNull(w)?.webContents.send('update-video-enabled', isEnabled);
+    });
+}
+
+export function updateRoundIconEnabled(isEnabled: boolean) {
+    config.roundIconEnabled = isEnabled;
+    BrowserWindow.getAllWindows().forEach(w => {
+        aliveOrNull(w)?.webContents.send('update-round-icon-enabled', isEnabled);
     });
 }

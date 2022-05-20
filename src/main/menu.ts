@@ -1,6 +1,9 @@
 import { app, BrowserWindow, globalShortcut, Menu, MenuItem, nativeImage, Tray } from 'electron';
 import { config, toggleStatusWithAuto } from './config';
-import { addDuration, resetDuration, togglePause, updateIconEnabled, updateImgEnabled, updateInlineImgEnabled, updateNewlineEnabled, updateVideoEnabled } from './ipc';
+import {
+    addDuration, resetDuration, togglePause, updateIconEnabled, updateImgEnabled,
+    updateInlineImgEnabled, updateNewlineEnabled, updateRoundIconEnabled, updateVideoEnabled
+} from './ipc';
 import { isExe, isMac, isWindows, isAppImage, restoreWindow, aliveOrNull } from './util';
 
 const relaunchExecPath = isExe ? process.env.PORTABLE_EXECUTABLE_FILE : undefined;
@@ -83,6 +86,7 @@ function createTrayMenu(windows: BrowserWindow[]): Menu {
             { label: 'Show Inline Imgae', type: 'checkbox', checked: config.inlineImgEnabled, click: (item) => updateInlineImgEnabled(item.checked) },
             { label: 'Show Imgae', type: 'checkbox', checked: config.imgEnabled, click: (item) => updateImgEnabled(item.checked) },
             { label: 'Show Video', type: 'checkbox', checked: config.videoEnabled, click: (item) => updateVideoEnabled(item.checked) },
+            { label: 'Round Icon', type: 'checkbox', checked: config.roundIconEnabled, click: (item) => updateRoundIconEnabled(item.checked) },
         ]}
     ]);
 

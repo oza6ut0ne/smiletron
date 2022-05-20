@@ -10,6 +10,7 @@ export default interface IElectronIpcApi {
     requestInlineImgEnabled: (callback: (isEnabled: boolean) => void) => void;
     requestImgEnabled: (callback: (isEnabled: boolean) => void) => void;
     requestVideoEnabled: (callback: (isEnabled: boolean) => void) => void;
+    requestRoundIconEnabled: (callback: (isEnabled: boolean) => void) => void;
     onCommentReceived: (callback: (comment: Comment, rendererInfo: RendererInfo) => void) => void;
     onTogglePause: (callback: () => void) => void;
     onDurationUpdated: (callback: (duration: number) => void) => void;
@@ -18,6 +19,7 @@ export default interface IElectronIpcApi {
     onUpdateInlineImgEnabled: (callback: (isEnabled: boolean) => void) => void;
     onUpdateImgEnabled: (callback: (isEnabled: boolean) => void) => void;
     onUpdateVideoEnabled: (callback: (isEnabled: boolean) => void) => void;
+    onUpdateRoundIconEnabled: (callback: (isEnabled: boolean) => void) => void;
 }
 
 declare global {
