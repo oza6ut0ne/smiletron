@@ -72,8 +72,8 @@ function createTrayMenu(windows: BrowserWindow[]): Menu {
                          type: 'radio', click: () => {
                              config.useMultiWindow = v;
                              if (!isAppImage) {
-                                app.relaunch({ execPath: relaunchExecPath });
-                                app.quit();
+                                 app.relaunch({ execPath: relaunchExecPath });
+                                 app.quit();
                              }
                 }}
             })},
@@ -83,8 +83,8 @@ function createTrayMenu(windows: BrowserWindow[]): Menu {
             }},
             { label: 'Allow Newline', type: 'checkbox', checked: config.newlineEnabled, click: (item) => updateNewlineEnabled(item.checked) },
             { label: 'Show Icon', type: 'checkbox', checked: config.iconEnabled, click: (item) => updateIconEnabled(item.checked) },
-            { label: 'Show Inline Imgae', type: 'checkbox', checked: config.inlineImgEnabled, click: (item) => updateInlineImgEnabled(item.checked) },
-            { label: 'Show Imgae', type: 'checkbox', checked: config.imgEnabled, click: (item) => updateImgEnabled(item.checked) },
+            { label: 'Show Inline Image', type: 'checkbox', checked: config.inlineImgEnabled, click: (item) => updateInlineImgEnabled(item.checked) },
+            { label: 'Show Image', type: 'checkbox', checked: config.imgEnabled, click: (item) => updateImgEnabled(item.checked) },
             { label: 'Show Video', type: 'checkbox', checked: config.videoEnabled, click: (item) => updateVideoEnabled(item.checked) },
             { label: 'Round Icon', type: 'checkbox', checked: config.roundIconEnabled, click: (item) => updateRoundIconEnabled(item.checked) },
         ]}
@@ -157,7 +157,7 @@ function addDebugMenu(contextMenu: Menu, windows: BrowserWindow[]) {
         ...perWindowMenuItems
     ]);
 
-    const debugMenu = new MenuItem({ label: 'Debug Memu', submenu: debugSubMenu });
+    const debugMenu = new MenuItem({ label: 'Debug Menu', submenu: debugSubMenu });
     contextMenu.append(debugMenu);
 }
 
