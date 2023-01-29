@@ -54,6 +54,12 @@ function createTrayMenu(windows: BrowserWindow[]): Menu {
             windows.forEach(w => aliveOrNull(w)?.minimize());
         }},
         { label: 'Pause / Unpause', accelerator: 'Space', click: togglePause },
+        { label: 'Mute TCP', type: 'checkbox', checked: config.muteTcp, visible: config.useTcp,
+            click: (item) => { config.muteTcp = item.checked }
+        },
+        { label: 'Mute MQTT', type: 'checkbox', checked: config.muteMqtt, visible: config.useMqtt,
+            click: (item) => { config.muteMqtt = item.checked }
+        },
         { label: 'Windows', visible: (windows.length > 1),
           submenu: windows.map((w, i) => {
               return { label: `Window ${i}`, submenu: [
@@ -124,12 +130,10 @@ function addDebugMenu(contextMenu: Menu, windows: BrowserWindow[]) {
             { label: 'enable', click: () => windows.forEach((w, i) => {
                 aliveOrNull(w)?.setIgnoreMouseEvents(false);
                 putCheckOnItem(contextMenu.getMenuItemById(`Enable MouseEvents ${i}`), true);
-                refreshTrayMenu();
             })},
             { label: 'disable', click: () => windows.forEach((w, i) => {
                 aliveOrNull(w)?.setIgnoreMouseEvents(true);
                 putCheckOnItem(contextMenu.getMenuItemById(`Enable MouseEvents ${i}`), false);
-                refreshTrayMenu();
             })},
         ]},
     );
@@ -139,12 +143,10 @@ function addDebugMenu(contextMenu: Menu, windows: BrowserWindow[]) {
             { label: 'enable', click: () => windows.forEach((w, i) => {
                 aliveOrNull(w)?.setSkipTaskbar(false);
                 putCheckOnItem(contextMenu.getMenuItemById(`Show in Taskbar ${i}`), true);
-                refreshTrayMenu();
             })},
             { label: 'disable', click: () => windows.forEach((w, i) => {
                 aliveOrNull(w)?.setSkipTaskbar(true);
                 putCheckOnItem(contextMenu.getMenuItemById(`Show in Taskbar ${i}`), false);
-                refreshTrayMenu();
             })},
         ]},
     );
@@ -182,5 +184,6 @@ function refreshTrayMenu() {
 function putCheckOnItem(item: MenuItem | null, isChecked: boolean) {
     if (item !== null) {
         item.checked = isChecked;
+        refreshTrayMenu();
     }
 }

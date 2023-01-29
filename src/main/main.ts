@@ -4,6 +4,7 @@ import { app, BrowserWindow, Display, Rectangle } from 'electron';
 import { screen as electronScreen } from 'electron';
 
 import { startTcpServer } from './comment-source/tcpServer';
+import { startMqtt } from './comment-source/mqtt';
 import { config } from './config';
 import { setupIpcHandlers } from './ipc';
 import { setupMenu, tray } from './menu';
@@ -46,6 +47,7 @@ function onAppReady() {
 
     const commentSender = setupIpcHandlers(windows, isSingleWindow, displays.length);
     startTcpServer(commentSender, args.p, args.b);
+    startMqtt(commentSender);
 }
 
 function createWindow(rect: Rectangle): BrowserWindow {

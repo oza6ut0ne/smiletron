@@ -57,6 +57,7 @@
   },
   "dependencies": {
     "electron-store": "^6.0.1",
+    "mqtt": "^4.3.7",
     "yargs": "^16.2.0"
   }
 }
