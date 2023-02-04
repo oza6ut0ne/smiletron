@@ -1,11 +1,8 @@
+import { ICON_SEPARATOR, IMG_SEPARATOR, INLINE_IMG_SEPARATOR, VIDEO_SEPARATOR } from '../../common/const';
 import { Comment, RendererInfo } from '../../common/types';
 import { noTruncSplit } from '../../common/util';
 import './window';
 
-const ICON_SEPARATOR = '##ICON##';
-const INLINE_IMG_SEPARATOR = '##INLINE_IMG##';
-const IMG_SEPARATOR = '##IMG##';
-const VIDEO_SEPARATOR = '##VIDEO##';
 const FLASHING_DECAY_TIME_MSEC = 1000;
 
 let durationPerDisplayMsec: number;
