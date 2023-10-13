@@ -27,15 +27,21 @@ interface ConfigSchema {
 }
 
 interface MqttConfigSchema {
-    readonly host: string | null;
+    readonly hostname: string | null;
     readonly port: number | null;
     readonly protocol: string | null;
+    readonly protocolVersion: 5 | 4 | 3;
     readonly topics: string | Array<string>;
     readonly qos: 0 | 1 | 2;
     readonly clientId: string | null;
     readonly username: string | null;
     readonly password: string | null;
     readonly rejectUnauthorized: boolean;
+    readonly wsOptions: MqttWsOptionsConfigSchema;
+}
+
+interface MqttWsOptionsConfigSchema {
+    readonly headers: { [key: string]: string }
 }
 
 class Config {
@@ -48,15 +54,19 @@ class Config {
         muteTcp: false,
         muteMqtt: false,
         mqttOptions: {
-            host: null,
+            hostname: null,
             port: null,
             protocol: 'mqtt',
+            protocolVersion: 5,
             topics: ['#'],
             qos: 0,
             clientId: null,
             username: null,
             password: null,
-            rejectUnauthorized: true
+            rejectUnauthorized: true,
+            wsOptions: {
+                headers: {}
+            }
         },
         duration: 5000,
         deltaDuration: 1000,

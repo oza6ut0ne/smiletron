@@ -5,7 +5,7 @@ import { ICommentSender } from "../ipc";
 export function startMqtt(commentSender: ICommentSender) {
     const options = config.mqttOptions;
 
-    if (!config.useMqtt || options.host === null) {
+    if (!config.useMqtt || options.hostname === null) {
         return;
     }
 
