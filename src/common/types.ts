@@ -21,7 +21,9 @@ export class Comment {
             }
 
             let text = parsed['text'];
-            if (text === undefined || typeof text !== 'string') {
+            if (text === undefined) {
+                text = '';
+            } else if (typeof text !== 'string') {
                 throw SyntaxError();
             }
 
