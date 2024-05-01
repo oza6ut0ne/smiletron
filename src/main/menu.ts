@@ -4,9 +4,8 @@ import {
     addDuration, resetDuration, togglePause, updateIconEnabled, updateImgEnabled,
     updateInlineImgEnabled, updateNewlineEnabled, updateRoundIconEnabled, updateVideoEnabled
 } from './ipc';
-import { isExe, isMac, isWindows, isAppImage, restoreWindow, aliveOrNull } from './util';
+import { isMac, isWindows, isAppImage, restoreWindow, aliveOrNull, tryRelaunch } from './util';
 
-const relaunchExecPath = isExe ? process.env.PORTABLE_EXECUTABLE_FILE : undefined;
 
 export let tray: Tray | null = null;
 let trayMenu: Menu | null = null;
@@ -77,10 +76,7 @@ function createTrayMenu(windows: BrowserWindow[]): Menu {
                 return { label: v, checked: config.useMultiWindow === v,
                          type: 'radio', click: () => {
                              config.useMultiWindow = v;
-                             if (!isAppImage) {
-                                 app.relaunch({ execPath: relaunchExecPath });
-                                 app.quit();
-                             }
+                             tryRelaunch();
                 }}
             })},
             { label: 'Visible on all Workspaces', type: 'checkbox', checked: config.visibleOnAllWorkspaces, click: (item) => {
@@ -93,6 +89,10 @@ function createTrayMenu(windows: BrowserWindow[]): Menu {
             { label: 'Show Image', type: 'checkbox', checked: config.imgEnabled, click: (item) => updateImgEnabled(item.checked) },
             { label: 'Show Video', type: 'checkbox', checked: config.videoEnabled, click: (item) => updateVideoEnabled(item.checked) },
             { label: 'Round Icon', type: 'checkbox', checked: config.roundIconEnabled, click: (item) => updateRoundIconEnabled(item.checked) },
+            { label: 'Hardware Acceleration', type: 'checkbox', checked: config.hardwareAccelerationEnabled, click: (item) => {
+                config.hardwareAccelerationEnabled = item.checked;
+                tryRelaunch();
+            }},
         ]}
     ]);
 
@@ -100,10 +100,7 @@ function createTrayMenu(windows: BrowserWindow[]): Menu {
         addDebugMenu(contextMenu, windows);
     }
 
-    contextMenu.append(new MenuItem({ label: 'Restart', visible: !isAppImage, click: () => {
-        app.relaunch({ execPath: relaunchExecPath });
-        app.quit();
-    }}));
+    contextMenu.append(new MenuItem({ label: 'Restart', visible: !isAppImage, click: () => tryRelaunch()}));
     contextMenu.append(new MenuItem({ role: 'quit' }));
 
     return contextMenu;
