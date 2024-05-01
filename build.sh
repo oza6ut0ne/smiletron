@@ -3,14 +3,18 @@
 while getopts d OPT
 do
   case $OPT in
-    d) BUILD_COMMAND="build:dev" ;;
+    d) DEBUG=1 ;;
   esac
 done
 shift $((OPTIND - 1))
 
-BUILD_COMMAND=${BUILD_COMMAND:-"build"}
+BUILD_COMMAND="build"
 PACKAGE_NAME=$(node -p "require('./package.json').name")
 PACKAGE_VERSION=$(node -p "require('./package.json').version")
+
+if [ -n "$DEBUG" ]; then
+  BUILD_COMMAND="build:dev"
+fi
 
 docker run --rm \
  --env-file <(env | grep -iE 'DEBUG|NODE_|ELECTRON_|YARN_|NPM_|CI|CIRCLE|TRAVIS_TAG|TRAVIS|TRAVIS_REPO_|TRAVIS_BUILD_|TRAVIS_BRANCH|TRAVIS_PULL_REQUEST_|APPVEYOR_|CSC_|GH_|GITHUB_|BT_|AWS_|STRIP|BUILD_') \
@@ -26,3 +30,9 @@ docker run --rm \
           && tar zcvf build/${PACKAGE_NAME}-${PACKAGE_VERSION}-mac.tar.gz -C build/mac ${PACKAGE_NAME}.app \
           && rm -f build/${PACKAGE_NAME}-${PACKAGE_VERSION}-mac.zip \
           && chown -R $(id -u):$(id -g) /project/{build,dist}"
+
+if [ -n "$DEBUG" ]; then
+  mv build/${PACKAGE_NAME}\ ${PACKAGE_VERSION}{,d}.exe
+  mv build/${PACKAGE_NAME}-${PACKAGE_VERSION}{,d}.AppImage
+  mv build/${PACKAGE_NAME}-${PACKAGE_VERSION}{,d}-mac.tar.gz
+fi
