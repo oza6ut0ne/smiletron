@@ -89,6 +89,10 @@ function createTrayMenu(windows: BrowserWindow[]): Menu {
             { label: 'Show Image', type: 'checkbox', checked: config.imgEnabled, click: (item) => updateImgEnabled(item.checked) },
             { label: 'Show Video', type: 'checkbox', checked: config.videoEnabled, click: (item) => updateVideoEnabled(item.checked) },
             { label: 'Round Icon', type: 'checkbox', checked: config.roundIconEnabled, click: (item) => updateRoundIconEnabled(item.checked) },
+            { label: 'Limit Frame Rate', type: 'checkbox', checked: config.frameRateLimitEnabled, click: (item) => {
+                config.frameRateLimitEnabled = item.checked;
+                tryRelaunch();
+            }},
             { label: 'Hardware Acceleration', type: 'checkbox', checked: config.hardwareAccelerationEnabled, click: (item) => {
                 config.hardwareAccelerationEnabled = item.checked;
                 tryRelaunch();

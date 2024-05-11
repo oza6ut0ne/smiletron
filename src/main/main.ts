@@ -33,7 +33,9 @@ if (!config.hardwareAccelerationEnabled) {
     app.disableHardwareAcceleration();
     app.commandLine.appendSwitch('disable-gpu');
 }
-app.commandLine.appendSwitch('disable-frame-rate-limit');
+if (!config.frameRateLimitEnabled) {
+    app.commandLine.appendSwitch('disable-frame-rate-limit');
+}
 app.whenReady().then(() => setTimeout(onAppReady, 2000));
 app.on('window-all-closed', app.quit);
 

@@ -23,6 +23,7 @@ interface ConfigSchema {
     readonly imgEnabled: boolean;
     readonly videoEnabled: boolean;
     readonly roundIconEnabled: boolean;
+    readonly frameRateLimitEnabled: boolean;
     readonly hardwareAccelerationEnabled: boolean;
     readonly globalRestoreAccelerator: string;
 }
@@ -79,6 +80,7 @@ class Config {
         imgEnabled: true,
         videoEnabled: true,
         roundIconEnabled: false,
+        frameRateLimitEnabled: true,
         hardwareAccelerationEnabled: false,
         globalRestoreAccelerator: 'CmdOrCtrl+Shift+Space'
     };
@@ -213,6 +215,14 @@ class Config {
 
     set roundIconEnabled(value: boolean) {
         this.store.set(getVarName(() => this.defaultValues.roundIconEnabled), value);
+    }
+
+    get frameRateLimitEnabled(): boolean {
+        return this.store.get(getVarName(() => this.defaultValues.frameRateLimitEnabled));
+    }
+
+    set frameRateLimitEnabled(value: boolean) {
+        this.store.set(getVarName(() => this.defaultValues.frameRateLimitEnabled), value);
     }
 
     get hardwareAccelerationEnabled(): boolean {
