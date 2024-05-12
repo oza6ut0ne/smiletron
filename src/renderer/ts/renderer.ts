@@ -1,4 +1,4 @@
-import { ICON_SEPARATOR, COLOR_SEPARATOR, IMG_SEPARATOR, INLINE_IMG_SEPARATOR, VIDEO_SEPARATOR } from '../../common/const';
+import { ICON_SEPARATOR, COLOR_SEPARATOR, TEXT_STROKE_SEPARATOR, IMG_SEPARATOR, INLINE_IMG_SEPARATOR, VIDEO_SEPARATOR } from '../../common/const';
 import { Comment, RendererInfo } from '../../common/types';
 import { noTruncSplit } from '../../common/util';
 import './window';
@@ -71,6 +71,11 @@ function addComment(comment: Comment): Promise<HTMLDivElement> {
         [color, text] = noTruncSplit(text, COLOR_SEPARATOR, 1);
     }
 
+    let textStroke = textStrokeStyle;
+    if (text.indexOf(TEXT_STROKE_SEPARATOR) !== -1) {
+        [textStroke, text] = noTruncSplit(text, TEXT_STROKE_SEPARATOR, 1);
+    }
+
     let videoSrcs: string[] = [];
     if (text.indexOf(VIDEO_SEPARATOR) !== -1) {
         [text, ...videoSrcs] = text.split(VIDEO_SEPARATOR);
@@ -97,14 +102,14 @@ function addComment(comment: Comment): Promise<HTMLDivElement> {
     if (inlineImgEnabled) {
         text.split(INLINE_IMG_SEPARATOR).forEach((t, i) => {
             if (i % 2 == 0) {
-                addSpan(contentDiv, t, color, textStrokeStyle)
+                addSpan(contentDiv, t, color, textStroke)
             } else {
                 mediaPromises.push(addImage(contentDiv, t, inlineImgHeight, 'inline-image'));
             }
         });
     } else {
         const content = text.split(INLINE_IMG_SEPARATOR).filter((_, i) => i % 2 == 0).join('');
-        addSpan(contentDiv, content, color, textStrokeStyle);
+        addSpan(contentDiv, content, color, textStroke);
     }
 
     if (imgEnabled) {
