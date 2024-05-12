@@ -57,6 +57,7 @@ class CommentSender implements ICommentSender {
 export function setupIpcHandlers(windows: BrowserWindow[], isSingleWindow: boolean, numDisplays: number): ICommentSender {
     ipcMain.handle('request-duration', () => durationPerDisplayMsec);
     ipcMain.handle('request-default-duration', () => config.getDefaultDuration());
+    ipcMain.handle('request-text-stroke-style', () => config.textStrokeStyle);
     ipcMain.handle('request-newline-enabled', () => config.newlineEnabled);
     ipcMain.handle('request-icon-enabled', () => config.iconEnabled);
     ipcMain.handle('request-inline-img-enabled', () => config.inlineImgEnabled);

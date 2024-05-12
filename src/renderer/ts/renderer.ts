@@ -6,11 +6,12 @@ import './window';
 const FLASHING_DECAY_TIME_MSEC = 1000;
 
 let durationPerDisplayMsec: number;
+let textStrokeStyle: string;
+let newlineEnabled: boolean;
 let iconEnabled: boolean;
 let inlineImgEnabled: boolean;
 let imgEnabled: boolean;
 let videoEnabled: boolean;
-let newlineEnabled: boolean;
 let roundIconEnabled: boolean;
 let isPause = false;
 
@@ -18,6 +19,7 @@ let isPause = false;
 document.addEventListener('DOMContentLoaded', () => {
     window.electron.requestDefaultDuration(setupIpcHandlers);
     window.electron.requestDuration((duration) => durationPerDisplayMsec = duration);
+    window.electron.requestTextStrokeStyle((style) => textStrokeStyle = style);
     window.electron.requestNewlineEnabled((isEnabled) => newlineEnabled = isEnabled);
     window.electron.requestIconEnabled((isEnabled) => iconEnabled = isEnabled);
     window.electron.requestInlineImgEnabled((isEnabled) => inlineImgEnabled = isEnabled);
@@ -88,14 +90,14 @@ function addComment(comment: Comment): Promise<HTMLDivElement> {
     if (inlineImgEnabled) {
         text.split(INLINE_IMG_SEPARATOR).forEach((t, i) => {
             if (i % 2 == 0) {
-                addSpan(contentDiv, t)
+                addSpan(contentDiv, t, textStrokeStyle)
             } else {
                 mediaPromises.push(addImage(contentDiv, t, inlineImgHeight, 'inline-image'));
             }
         });
     } else {
         const content = text.split(INLINE_IMG_SEPARATOR).filter((_, i) => i % 2 == 0).join('');
-        addSpan(contentDiv, content);
+        addSpan(contentDiv, content, textStrokeStyle);
     }
 
     if (imgEnabled) {
@@ -135,7 +137,7 @@ function calcHeight(text: string): number {
     return height;
 }
 
-function addSpan(div: HTMLDivElement, text: string) {
+function addSpan(div: HTMLDivElement, text: string, textStrokeStyle: string) {
     text.split(/\r|\n|\r\n/).forEach((t, i) => {
         if (i > 0) {
             div.appendChild(document.createElement('br'));
@@ -145,6 +147,7 @@ function addSpan(div: HTMLDivElement, text: string) {
         }
         const span = document.createElement('span');
         span.className = 'text';
+        span.style.webkitTextStroke = textStrokeStyle;
         span.textContent = t;
         div.appendChild(span);
     });
