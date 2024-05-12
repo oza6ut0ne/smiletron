@@ -1,4 +1,4 @@
-import { ICON_SEPARATOR, IMG_SEPARATOR, INLINE_IMG_SEPARATOR, VIDEO_SEPARATOR } from '../../common/const';
+import { ICON_SEPARATOR, COLOR_SEPARATOR, IMG_SEPARATOR, INLINE_IMG_SEPARATOR, VIDEO_SEPARATOR } from '../../common/const';
 import { Comment, RendererInfo } from '../../common/types';
 import { noTruncSplit } from '../../common/util';
 import './window';
@@ -6,6 +6,7 @@ import './window';
 const FLASHING_DECAY_TIME_MSEC = 1000;
 
 let durationPerDisplayMsec: number;
+let textColorStyle: string;
 let textStrokeStyle: string;
 let newlineEnabled: boolean;
 let iconEnabled: boolean;
@@ -19,6 +20,7 @@ let isPause = false;
 document.addEventListener('DOMContentLoaded', () => {
     window.electron.requestDefaultDuration(setupIpcHandlers);
     window.electron.requestDuration((duration) => durationPerDisplayMsec = duration);
+    window.electron.requestTextColorStyle((style) => textColorStyle = style);
     window.electron.requestTextStrokeStyle((style) => textStrokeStyle = style);
     window.electron.requestNewlineEnabled((isEnabled) => newlineEnabled = isEnabled);
     window.electron.requestIconEnabled((isEnabled) => iconEnabled = isEnabled);
@@ -64,6 +66,11 @@ function addComment(comment: Comment): Promise<HTMLDivElement> {
         }
     }
 
+    let color = textColorStyle;
+    if (text.indexOf(COLOR_SEPARATOR) !== -1) {
+        [color, text] = noTruncSplit(text, COLOR_SEPARATOR, 1);
+    }
+
     let videoSrcs: string[] = [];
     if (text.indexOf(VIDEO_SEPARATOR) !== -1) {
         [text, ...videoSrcs] = text.split(VIDEO_SEPARATOR);
@@ -90,14 +97,14 @@ function addComment(comment: Comment): Promise<HTMLDivElement> {
     if (inlineImgEnabled) {
         text.split(INLINE_IMG_SEPARATOR).forEach((t, i) => {
             if (i % 2 == 0) {
-                addSpan(contentDiv, t, textStrokeStyle)
+                addSpan(contentDiv, t, color, textStrokeStyle)
             } else {
                 mediaPromises.push(addImage(contentDiv, t, inlineImgHeight, 'inline-image'));
             }
         });
     } else {
         const content = text.split(INLINE_IMG_SEPARATOR).filter((_, i) => i % 2 == 0).join('');
-        addSpan(contentDiv, content, textStrokeStyle);
+        addSpan(contentDiv, content, color, textStrokeStyle);
     }
 
     if (imgEnabled) {
@@ -137,7 +144,7 @@ function calcHeight(text: string): number {
     return height;
 }
 
-function addSpan(div: HTMLDivElement, text: string, textStrokeStyle: string) {
+function addSpan(div: HTMLDivElement, text: string, color: string, textStrokeStyle: string) {
     text.split(/\r|\n|\r\n/).forEach((t, i) => {
         if (i > 0) {
             div.appendChild(document.createElement('br'));
@@ -145,9 +152,13 @@ function addSpan(div: HTMLDivElement, text: string, textStrokeStyle: string) {
         if (t === '') {
             return;
         }
+
         const span = document.createElement('span');
         span.className = 'text';
         span.style.webkitTextStroke = textStrokeStyle;
+        if (color) {
+            span.style.color = color;
+        }
         span.textContent = t;
         div.appendChild(span);
     });

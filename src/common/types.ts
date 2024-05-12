@@ -1,6 +1,4 @@
-import { ICON_SEPARATOR, IMG_SEPARATOR, INLINE_IMG_SEPARATOR, VIDEO_SEPARATOR } from './const';
-
-const JSON_INLINE_IMG_SEPARATOR = '##INLINE##';
+import { ICON_SEPARATOR, COLOR_SEPARATOR, IMG_SEPARATOR, INLINE_IMG_SEPARATOR, VIDEO_SEPARATOR, JSON_INLINE_IMG_SEPARATOR } from './const';
 
 export class Comment {
     id: number;
@@ -28,6 +26,7 @@ export class Comment {
             }
 
             const icon = parsed['icon'];
+            const color = parsed['color'];
             const inlineImages = parsed['inlineImages'];
             const images = parsed['images'];
             const videos = parsed['videos'];
@@ -41,6 +40,10 @@ export class Comment {
             let comment = '';
             if (icon !== undefined && icon !== null) {
                 comment += `${icon}${ICON_SEPARATOR}`;
+            }
+
+            if (typeof color === 'string') {
+                comment += `${color}${COLOR_SEPARATOR}`;
             }
 
             inlineImages?.forEach((i: any) => {

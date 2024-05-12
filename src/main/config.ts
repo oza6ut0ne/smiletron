@@ -15,6 +15,7 @@ interface ConfigSchema {
     readonly mqttOptions: MqttConfigSchema;
     readonly duration: number;
     readonly deltaDuration: number;
+    readonly textColorStyle: string;
     readonly textStrokeStyle: string;
     readonly visibleOnAllWorkspaces: boolean;
     readonly useMultiWindow: ToggleStatusWithAuto;
@@ -73,6 +74,7 @@ class Config {
         },
         duration: 5000,
         deltaDuration: 1000,
+        textColorStyle: "rgba(255, 255, 255, 1.0)",
         textStrokeStyle: "2px rgba(0, 0, 0, 1.0)",
         visibleOnAllWorkspaces: true,
         useMultiWindow: 'auto',
@@ -153,6 +155,10 @@ class Config {
 
     set deltaDuration(value: number) {
         this.store.set(getVarName(() => this.defaultValues.deltaDuration), value);
+    }
+
+    get textColorStyle(): string {
+        return this.store.get(getVarName(() => this.defaultValues.textColorStyle));
     }
 
     get textStrokeStyle(): string {

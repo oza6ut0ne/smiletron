@@ -16,6 +16,10 @@ contextBridge.exposeInMainWorld(
             ipcRenderer.invoke('request-default-duration').then((result) => callback(result));
         },
 
+        requestTextColorStyle: (callback: (style: string) => void) => {
+            ipcRenderer.invoke('request-text-color-style').then((result) => callback(result));
+        },
+
         requestTextStrokeStyle: (callback: (style: string) => void) => {
             ipcRenderer.invoke('request-text-stroke-style').then((result) => callback(result));
         },

@@ -5,6 +5,7 @@ export default interface IElectronIpcApi {
     notifyCommentArrivedToLeftEdge: (comment: Comment, windowIndex: number) => void;
     requestDuration: (callback: (duration: number) => void) => void;
     requestDefaultDuration: (callback: (duration: number) => void) => void;
+    requestTextColorStyle: (callback: (style: string) => void) => void;
     requestTextStrokeStyle: (callback: (style: string) => void) => void;
     requestNewlineEnabled: (callback: (isEnabled: boolean) => void) => void;
     requestIconEnabled: (callback: (isEnabled: boolean) => void) => void;
