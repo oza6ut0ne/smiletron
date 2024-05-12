@@ -4,7 +4,7 @@ import {
     addDuration, resetDuration, togglePause, updateIconEnabled, updateImgEnabled,
     updateInlineImgEnabled, updateNewlineEnabled, updateRoundIconEnabled, updateVideoEnabled
 } from './ipc';
-import { isMac, isWindows, isAppImage, restoreWindow, aliveOrNull, tryRelaunch } from './util';
+import { isMac, isWindows, isAppImage, restoreWindow, skipTaskbar, aliveOrNull, tryRelaunch } from './util';
 
 
 export let tray: Tray | null = null;
@@ -142,11 +142,11 @@ function addDebugMenu(contextMenu: Menu, windows: BrowserWindow[]) {
     const taskbarMenuItem  = new MenuItem({ label: 'Show in Taskbar',
         submenu: [
             { label: 'enable', click: () => windows.forEach((w, i) => {
-                aliveOrNull(w)?.setSkipTaskbar(false);
+                skipTaskbar(w, false);
                 putCheckOnItem(contextMenu.getMenuItemById(`Show in Taskbar ${i}`), true);
             })},
             { label: 'disable', click: () => windows.forEach((w, i) => {
-                aliveOrNull(w)?.setSkipTaskbar(true);
+                skipTaskbar(w, true);
                 putCheckOnItem(contextMenu.getMenuItemById(`Show in Taskbar ${i}`), false);
             })},
         ]},
@@ -171,7 +171,7 @@ function createPerWindowsDebugMenuItem(window: BrowserWindow, index: number): Me
           click: (item) => aliveOrNull(window)?.setIgnoreMouseEvents(!item.checked)
         },
         { label: 'Show in Taskbar', id: `Show in Taskbar ${index}`, type: 'checkbox',
-          click: (item) => aliveOrNull(window)?.setSkipTaskbar(!item.checked)
+          click: (item) => skipTaskbar(window, !item.checked)
         },
     ]});
 }

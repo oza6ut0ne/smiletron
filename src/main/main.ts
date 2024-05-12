@@ -9,7 +9,7 @@ import { config } from './config';
 import { setupIpcHandlers } from './ipc';
 import { setupMenu, tray } from './menu';
 import { Rect } from './types';
-import { isMac } from './util';
+import { isMac, skipTaskbar } from './util';
 
 const mainUrl = `file://${__dirname}/html/index.html`;
 const assetsPath = app.isPackaged ? path.join(process.resourcesPath, 'assets') : 'src/assets';
@@ -94,6 +94,10 @@ function createWindow(rect: Rectangle): BrowserWindow {
     window.on('restore', () => {
         tray?.setToolTip(app.name);
     });
+
+    window.once('ready-to-show', () => {
+        skipTaskbar(window, true);
+    })
 
     return window;
 }
