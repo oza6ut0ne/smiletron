@@ -27,6 +27,7 @@ interface ConfigSchema {
     readonly roundIconEnabled: boolean;
     readonly frameRateLimitEnabled: boolean;
     readonly hardwareAccelerationEnabled: boolean;
+    readonly onAppReadyDelay: number;
     readonly globalRestoreAccelerator: string;
 }
 
@@ -86,6 +87,7 @@ class Config {
         roundIconEnabled: false,
         frameRateLimitEnabled: true,
         hardwareAccelerationEnabled: false,
+        onAppReadyDelay: 0,
         globalRestoreAccelerator: 'CmdOrCtrl+Shift+Space'
     };
 
@@ -243,6 +245,10 @@ class Config {
 
     set hardwareAccelerationEnabled(value: boolean) {
         this.store.set(getVarName(() => this.defaultValues.hardwareAccelerationEnabled), value);
+    }
+
+    get onAppReadyDelay(): number {
+        return this.store.get(getVarName(() => this.defaultValues.onAppReadyDelay));
     }
 
     get globalRestoreAccelerator(): string {

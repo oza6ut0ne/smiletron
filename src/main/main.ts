@@ -36,7 +36,7 @@ if (!config.hardwareAccelerationEnabled) {
 if (!config.frameRateLimitEnabled) {
     app.commandLine.appendSwitch('disable-frame-rate-limit');
 }
-app.whenReady().then(() => setTimeout(onAppReady, 2000));
+app.whenReady().then(() => setTimeout(onAppReady, config.onAppReadyDelay));
 app.on('window-all-closed', app.quit);
 
 function onAppReady() {
