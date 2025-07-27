@@ -2,9 +2,10 @@ import { app, BrowserWindow, globalShortcut, Menu, MenuItem, nativeImage, Tray }
 import { config, toggleStatusWithAuto } from './config';
 import {
     addDuration, resetDuration, togglePause, updateIconEnabled, updateImgEnabled,
-    updateInlineImgEnabled, updateNewlineEnabled, updateRoundIconEnabled, updateVideoEnabled
+    updateInlineImgEnabled, updateNewlineEnabled, updateOverLimitComments, updateRoundIconEnabled, updateVideoEnabled
 } from './ipc';
 import { isMac, isWindows, isAppImage, restoreWindow, skipTaskbar, aliveOrNull, tryRelaunch } from './util';
+import { overLimitComments } from '../common/types';
 
 
 export let tray: Tray | null = null;
@@ -77,6 +78,13 @@ function createTrayMenu(windows: BrowserWindow[]): Menu {
                          type: 'radio', click: () => {
                              config.useMultiWindow = v;
                              tryRelaunch();
+                }}
+            })},
+            { label: 'Over Limit Comments', submenu: overLimitComments.map(v => {
+                return { label: v, checked: config.overLimitComments === v,
+                         type: 'radio', click: () => {
+                            updateOverLimitComments(v);
+                            refreshTrayMenu();
                 }}
             })},
             { label: 'Visible on all Workspaces', type: 'checkbox', checked: config.visibleOnAllWorkspaces, click: (item) => {

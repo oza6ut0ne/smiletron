@@ -1,5 +1,5 @@
 import { BrowserWindow, ipcMain, IpcMainEvent } from 'electron';
-import { Comment, RendererInfo } from '../common/types';
+import { Comment, OverLimitComments, RendererInfo } from '../common/types';
 import { aliveOrNull } from './util';
 import { config } from './config';
 
@@ -57,8 +57,10 @@ class CommentSender implements ICommentSender {
 export function setupIpcHandlers(windows: BrowserWindow[], isSingleWindow: boolean, numDisplays: number): ICommentSender {
     ipcMain.handle('request-duration', () => durationPerDisplayMsec);
     ipcMain.handle('request-default-duration', () => config.getDefaultDuration());
+    ipcMain.handle('request-max-comments-on-display', () => config.maxCommentsOnDisplay);
     ipcMain.handle('request-text-color-style', () => config.textColorStyle);
     ipcMain.handle('request-text-stroke-style', () => config.textStrokeStyle);
+    ipcMain.handle('request-over-limit-comments', () => config.overLimitComments);
     ipcMain.handle('request-newline-enabled', () => config.newlineEnabled);
     ipcMain.handle('request-icon-enabled', () => config.iconEnabled);
     ipcMain.handle('request-inline-img-enabled', () => config.inlineImgEnabled);
@@ -92,6 +94,13 @@ function updateDuration(duration: number) {
 
     BrowserWindow.getAllWindows().forEach(w => {
         aliveOrNull(w)?.webContents.send('update-duration', durationPerDisplayMsec);
+    });
+}
+
+export function updateOverLimitComments(value: OverLimitComments) {
+    config.overLimitComments = value;
+    BrowserWindow.getAllWindows().forEach(w => {
+        aliveOrNull(w)?.webContents.send('update-over-limit-comments', value);
     });
 }
 

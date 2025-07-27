@@ -1,13 +1,15 @@
 import { ICON_SEPARATOR, COLOR_SEPARATOR, TEXT_STROKE_SEPARATOR, IMG_SEPARATOR, INLINE_IMG_SEPARATOR, VIDEO_SEPARATOR } from '../../common/const';
-import { Comment, RendererInfo } from '../../common/types';
+import { Comment, OverLimitComments, RendererInfo } from '../../common/types';
 import { noTruncSplit } from '../../common/util';
 import './window';
 
 const FLASHING_DECAY_TIME_MSEC = 1000;
 
 let durationPerDisplayMsec: number;
+let maxCommentsOnDisplay: number
 let textColorStyle: string;
 let textStrokeStyle: string;
+let overLimitComments: OverLimitComments;
 let newlineEnabled: boolean;
 let iconEnabled: boolean;
 let inlineImgEnabled: boolean;
@@ -20,8 +22,10 @@ let isPause = false;
 document.addEventListener('DOMContentLoaded', () => {
     window.electron.requestDefaultDuration(setupIpcHandlers);
     window.electron.requestDuration((duration) => durationPerDisplayMsec = duration);
+    window.electron.requestMaxCommentsOnDisplay((maxComments) => maxCommentsOnDisplay = maxComments);
     window.electron.requestTextColorStyle((style) => textColorStyle = style);
     window.electron.requestTextStrokeStyle((style) => textStrokeStyle = style);
+    window.electron.requestOverLimitComments((value) => overLimitComments = value);
     window.electron.requestNewlineEnabled((isEnabled) => newlineEnabled = isEnabled);
     window.electron.requestIconEnabled((isEnabled) => iconEnabled = isEnabled);
     window.electron.requestInlineImgEnabled((isEnabled) => inlineImgEnabled = isEnabled);
@@ -240,6 +244,10 @@ function animateToLeft(div: HTMLDivElement, start: number, end: number, duration
         animation.pause();
     }
 
+    animation.oncancel = (a) => {
+        document.body.removeChild(div);
+    };
+
     return animation.finished;
 }
 
@@ -247,15 +255,33 @@ async function handleComment(comment: Comment, rendererInfo: RendererInfo) {
     const commentDiv = await addComment(comment);
     const wideWindowFactor = rendererInfo.isSingleWindow ? rendererInfo.numDisplays : 1;
     const durationRatio = 1 / (1 + commentDiv.offsetWidth * wideWindowFactor / window.innerWidth);
+    if(!isPause) {
+        const commentAmimations = getCommentAnimations();
+        if (overLimitComments !== 'keep' && maxCommentsOnDisplay > 0 && commentAmimations.length > maxCommentsOnDisplay) {
+            for (let i = 0; i < commentAmimations.length - maxCommentsOnDisplay; i++) {
+                commentAmimations[i]?.cancel();
+            }
+        }
+    }
 
     animateToLeft(commentDiv, window.innerWidth, 0,
                   durationPerDisplayMsec * wideWindowFactor * durationRatio)
-    .then(() => {
-        window.electron.notifyCommentArrivedToLeftEdge(comment, rendererInfo.windowIndex);
-        return animateToLeft(commentDiv, 0, -commentDiv.offsetWidth * wideWindowFactor,
-                             durationPerDisplayMsec * wideWindowFactor * (1 - durationRatio));
-    }).then(() => {
-        document.body.removeChild(commentDiv);
+    .catch(() => {
+        // nop: Animation is canceled
+    }).then((a) => {
+        if (a instanceof Animation || overLimitComments !== 'discard') {
+            window.electron.notifyCommentArrivedToLeftEdge(comment, rendererInfo.windowIndex);
+            if (a instanceof Animation) {
+                return animateToLeft(commentDiv, 0, -commentDiv.offsetWidth * wideWindowFactor,
+                                     durationPerDisplayMsec * wideWindowFactor * (1 - durationRatio));
+            }
+        }
+    }).catch(() => {
+        // nop: Animation is canceled
+    }).then((a) => {
+        if (a instanceof Animation) {
+            document.body.removeChild(commentDiv);
+        }
     });
 }
 
@@ -293,6 +319,7 @@ function setupIpcHandlers(defaultDuration: number) {
         }
     });
 
+    window.electron.onUpdateOverLimitComments((value) => overLimitComments = value);
     window.electron.onUpdateNewlineEnabled((isEnabled) => newlineEnabled = isEnabled);
     window.electron.onUpdateIconEnabled((isEnabled) => iconEnabled = isEnabled);
     window.electron.onUpdateInlineImgEnabled((isEnabled) => inlineImgEnabled = isEnabled);

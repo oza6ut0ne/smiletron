@@ -1,4 +1,5 @@
 import ElectronStore from 'electron-store';
+import { OverLimitComments } from '../common/types';
 import { getVarName } from '../common/util';
 
 export const toggleStatusWithAuto = ['auto', 'enabled', 'disabled'] as const;
@@ -15,10 +16,12 @@ interface ConfigSchema {
     readonly mqttOptions: MqttConfigSchema;
     readonly duration: number;
     readonly deltaDuration: number;
+    readonly maxCommentsOnDisplay: number,
     readonly textColorStyle: string;
     readonly textStrokeStyle: string;
-    readonly visibleOnAllWorkspaces: boolean;
     readonly useMultiWindow: ToggleStatusWithAuto;
+    readonly overLimitComments: OverLimitComments;
+    readonly visibleOnAllWorkspaces: boolean;
     readonly newlineEnabled: boolean;
     readonly iconEnabled: boolean;
     readonly inlineImgEnabled: boolean;
@@ -75,10 +78,12 @@ class Config {
         },
         duration: 5000,
         deltaDuration: 1000,
+        maxCommentsOnDisplay: 10,
         textColorStyle: "rgba(255, 255, 255, 1.0)",
         textStrokeStyle: "2px rgba(0, 0, 0, 1.0)",
-        visibleOnAllWorkspaces: true,
         useMultiWindow: 'auto',
+        overLimitComments: 'keep',
+        visibleOnAllWorkspaces: true,
         newlineEnabled: true,
         iconEnabled: true,
         inlineImgEnabled: true,
@@ -159,6 +164,10 @@ class Config {
         this.store.set(getVarName(() => this.defaultValues.deltaDuration), value);
     }
 
+    get maxCommentsOnDisplay(): number {
+        return this.store.get(getVarName(() => this.defaultValues.maxCommentsOnDisplay));
+    }
+
     get textColorStyle(): string {
         return this.store.get(getVarName(() => this.defaultValues.textColorStyle));
     }
@@ -167,20 +176,28 @@ class Config {
         return this.store.get(getVarName(() => this.defaultValues.textStrokeStyle));
     }
 
-    get visibleOnAllWorkspaces(): boolean {
-        return this.store.get(getVarName(() => this.defaultValues.visibleOnAllWorkspaces));
-    }
-
-    set visibleOnAllWorkspaces(value: boolean) {
-        this.store.set(getVarName(() => this.defaultValues.visibleOnAllWorkspaces), value);
-    }
-
     get useMultiWindow(): ToggleStatusWithAuto {
         return this.store.get(getVarName(() => this.defaultValues.useMultiWindow));
     }
 
     set useMultiWindow(value: ToggleStatusWithAuto) {
         this.store.set(getVarName(() => this.defaultValues.useMultiWindow), value);
+    }
+
+    get overLimitComments(): OverLimitComments {
+        return this.store.get(getVarName(() => this.defaultValues.overLimitComments));
+    }
+
+    set overLimitComments(value: OverLimitComments) {
+        this.store.set(getVarName(() => this.defaultValues.overLimitComments), value);
+    }
+
+    get visibleOnAllWorkspaces(): boolean {
+        return this.store.get(getVarName(() => this.defaultValues.visibleOnAllWorkspaces));
+    }
+
+    set visibleOnAllWorkspaces(value: boolean) {
+        this.store.set(getVarName(() => this.defaultValues.visibleOnAllWorkspaces), value);
     }
 
     get newlineEnabled(): boolean {

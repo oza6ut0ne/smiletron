@@ -8,6 +8,9 @@ import {
     JSON_INLINE_IMG_SEPARATOR
 } from './const';
 
+export const overLimitComments = ['keep', 'send to next display', 'discard'] as const;
+export type OverLimitComments = typeof overLimitComments[number];
+
 export class Comment {
     id: number;
     text: string;

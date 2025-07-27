@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
-import { Comment, RendererInfo } from '../common/types';
+import { Comment, OverLimitComments, RendererInfo } from '../common/types';
 
 
 contextBridge.exposeInMainWorld(
@@ -16,12 +16,20 @@ contextBridge.exposeInMainWorld(
             ipcRenderer.invoke('request-default-duration').then((result) => callback(result));
         },
 
+        requestMaxCommentsOnDisplay: (callback: (maxComments: number) => void) => {
+            ipcRenderer.invoke('request-max-comments-on-display').then((result) => callback(result));
+        },
+
         requestTextColorStyle: (callback: (style: string) => void) => {
             ipcRenderer.invoke('request-text-color-style').then((result) => callback(result));
         },
 
         requestTextStrokeStyle: (callback: (style: string) => void) => {
             ipcRenderer.invoke('request-text-stroke-style').then((result) => callback(result));
+        },
+
+        requestOverLimitComments: (callback: (value: OverLimitComments) => void) => {
+            ipcRenderer.invoke('request-over-limit-comments').then((result) => callback(result));
         },
 
         requestNewlineEnabled: (callback: (isEnabled: boolean) => void) => {
@@ -59,6 +67,10 @@ contextBridge.exposeInMainWorld(
 
         onDurationUpdated: (callback: (duration: number) => void) => {
             ipcRenderer.on('update-duration', (event: IpcRendererEvent, duration) => callback(duration));
+        },
+
+        onUpdateOverLimitComments: (callback: (value: OverLimitComments) => void) => {
+            ipcRenderer.on('update-over-limit-comments', (event: IpcRendererEvent, value) => callback(value));
         },
 
         onUpdateNewlineEnabled: (callback: (isEnabled: boolean) => void) => {
