@@ -269,8 +269,8 @@ async function handleComment(comment: Comment, rendererInfo: RendererInfo) {
     const durationRatio = 1 / (1 + commentDiv.offsetWidth * wideWindowFactor / window.innerWidth);
     if(!isPause) {
         const commentAmimations = getCommentAnimations();
-        if (overLimitComments !== 'keep' && maxCommentsOnDisplay > 0 && commentAmimations.length > maxCommentsOnDisplay) {
-            for (let i = 0; i < commentAmimations.length - maxCommentsOnDisplay; i++) {
+        if (overLimitComments !== 'keep' && maxCommentsOnDisplay > 0 && commentAmimations.length >= maxCommentsOnDisplay) {
+            for (let i = 0; i < commentAmimations.length - maxCommentsOnDisplay + 1; i++) {
                 commentAmimations[i]?.cancel();
             }
         }
