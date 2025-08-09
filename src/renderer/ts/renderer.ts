@@ -1,4 +1,4 @@
-import { ICON_SEPARATOR, COLOR_SEPARATOR, TEXT_STROKE_SEPARATOR, IMG_SEPARATOR, INLINE_IMG_SEPARATOR, VIDEO_SEPARATOR } from '../../common/const';
+import { ICON_SEPARATOR, FONT_SIZE_SEPARATOR, COLOR_SEPARATOR, TEXT_STROKE_SEPARATOR, IMG_SEPARATOR, INLINE_IMG_SEPARATOR, VIDEO_SEPARATOR } from '../../common/const';
 import { Comment, OverLimitComments, RendererInfo } from '../../common/types';
 import { noTruncSplit } from '../../common/util';
 import './window';
@@ -7,6 +7,7 @@ const FLASHING_DECAY_TIME_MSEC = 1000;
 
 let durationPerDisplayMsec: number;
 let maxCommentsOnDisplay: number
+let fontSizeStyle: string;
 let textColorStyle: string;
 let textStrokeStyle: string;
 let overLimitComments: OverLimitComments;
@@ -23,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.electron.requestDefaultDuration(setupIpcHandlers);
     window.electron.requestDuration((duration) => durationPerDisplayMsec = duration);
     window.electron.requestMaxCommentsOnDisplay((maxComments) => maxCommentsOnDisplay = maxComments);
+    window.electron.requestFontSize((size) => fontSizeStyle = size);
     window.electron.requestTextColorStyle((style) => textColorStyle = style);
     window.electron.requestTextStrokeStyle((style) => textStrokeStyle = style);
     window.electron.requestOverLimitComments((value) => overLimitComments = value);
@@ -70,6 +72,14 @@ function addComment(comment: Comment): Promise<HTMLDivElement> {
         }
     }
 
+    let fontSize = fontSizeStyle;
+    if (text.indexOf(FONT_SIZE_SEPARATOR) !== -1) {
+        [fontSize, text] = noTruncSplit(text, FONT_SIZE_SEPARATOR, 1);
+        if (fontSize.match(/^\d+$/)) {
+            fontSize += 'pt';
+        }
+    }
+
     let color = textColorStyle;
     if (text.indexOf(COLOR_SEPARATOR) !== -1) {
         [color, text] = noTruncSplit(text, COLOR_SEPARATOR, 1);
@@ -98,6 +108,8 @@ function addComment(comment: Comment): Promise<HTMLDivElement> {
     const inlineImgHeight = calcHeight(' ');
     const mediaPromises: Promise<void>[] = [];
     mediaPromises.push(addImage(commentDiv, iconSrc, mediaHeight, 'image', roundIconEnabled));
+
+    commentDiv.style.fontSize = fontSize;
 
     const contentDiv = document.createElement('div');
     contentDiv.className ='content';

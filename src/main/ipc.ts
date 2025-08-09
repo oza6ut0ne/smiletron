@@ -58,6 +58,7 @@ export function setupIpcHandlers(windows: BrowserWindow[], isSingleWindow: boole
     ipcMain.handle('request-duration', () => durationPerDisplayMsec);
     ipcMain.handle('request-default-duration', () => config.getDefaultDuration());
     ipcMain.handle('request-max-comments-on-display', () => config.maxCommentsOnDisplay);
+    ipcMain.handle('request-font-size', () => config.fontSize);
     ipcMain.handle('request-text-color-style', () => config.textColorStyle);
     ipcMain.handle('request-text-stroke-style', () => config.textStrokeStyle);
     ipcMain.handle('request-over-limit-comments', () => config.overLimitComments);

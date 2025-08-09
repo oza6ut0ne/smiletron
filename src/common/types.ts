@@ -1,5 +1,6 @@
 import {
     ICON_SEPARATOR,
+    FONT_SIZE_SEPARATOR,
     COLOR_SEPARATOR,
     TEXT_STROKE_SEPARATOR,
     IMG_SEPARATOR,
@@ -37,6 +38,7 @@ export class Comment {
             }
 
             const icon = parsed['icon'];
+            const fontSize = parsed['fontSize'];
             const color = parsed['color'];
             const textStroke = parsed['textStroke'];
             const inlineImages = parsed['inlineImages'];
@@ -52,6 +54,12 @@ export class Comment {
             let comment = '';
             if (icon !== undefined && icon !== null) {
                 comment += `${icon}${ICON_SEPARATOR}`;
+            }
+
+            if (typeof fontSize === 'string') {
+                comment += `${fontSize}${FONT_SIZE_SEPARATOR}`;
+            } else if (typeof fontSize === 'number') {
+                comment += `${fontSize}pt${FONT_SIZE_SEPARATOR}`;
             }
 
             if (typeof color === 'string') {

@@ -17,6 +17,7 @@ interface ConfigSchema {
     readonly duration: number;
     readonly deltaDuration: number;
     readonly maxCommentsOnDisplay: number,
+    readonly fontSize: string;
     readonly textColorStyle: string;
     readonly textStrokeStyle: string;
     readonly useMultiWindow: ToggleStatusWithAuto;
@@ -79,6 +80,7 @@ class Config {
         duration: 5000,
         deltaDuration: 1000,
         maxCommentsOnDisplay: 10,
+        fontSize: "36pt",
         textColorStyle: "rgba(255, 255, 255, 1.0)",
         textStrokeStyle: "2px rgba(0, 0, 0, 1.0)",
         useMultiWindow: 'auto',
@@ -166,6 +168,10 @@ class Config {
 
     get maxCommentsOnDisplay(): number {
         return this.store.get(getVarName(() => this.defaultValues.maxCommentsOnDisplay));
+    }
+
+    get fontSize(): string {
+        return this.store.get(getVarName(() => this.defaultValues.fontSize));
     }
 
     get textColorStyle(): string {

@@ -6,6 +6,7 @@ export default interface IElectronIpcApi {
     requestDuration: (callback: (duration: number) => void) => void;
     requestDefaultDuration: (callback: (duration: number) => void) => void;
     requestMaxCommentsOnDisplay: (callback: (maxComments: number) => void) => void;
+    requestFontSize: (callback: (size: string) => void) => void;
     requestTextColorStyle: (callback: (style: string) => void) => void;
     requestTextStrokeStyle: (callback: (style: string) => void) => void;
     requestOverLimitComments: (callback: (value: OverLimitComments) => void) => void;

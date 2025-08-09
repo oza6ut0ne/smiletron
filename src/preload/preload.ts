@@ -20,6 +20,10 @@ contextBridge.exposeInMainWorld(
             ipcRenderer.invoke('request-max-comments-on-display').then((result) => callback(result));
         },
 
+        requestFontSize: (callback: (size: string) => void) => {
+            ipcRenderer.invoke('request-font-size').then((result) => callback(result));
+        },
+
         requestTextColorStyle: (callback: (style: string) => void) => {
             ipcRenderer.invoke('request-text-color-style').then((result) => callback(result));
         },
